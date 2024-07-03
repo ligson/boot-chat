@@ -6,6 +6,7 @@ import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,8 +24,8 @@ public class AIController {
     @Value("classpath:chat_templates/rag.tpl")
     private Resource promptResource;
 
-    public AIController(ChatClient chatClient, VectorStore vectorStore) {
-        this.chatClient = chatClient;
+    public AIController(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, VectorStore vectorStore) {
+        this.chatClient = builder.build();
         this.vectorStore = vectorStore;
     }
 
