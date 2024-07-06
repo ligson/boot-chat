@@ -1,6 +1,8 @@
 spring:
   application:
     name: boot-chat
+  webflux:
+    base-path: /chat-be
   ai:
     vectorstore:
       milvus:
@@ -24,10 +26,16 @@ spring:
         options:
           model: yi_34b_chat
           temperature: 0.7
+        enabled: true
       api-key: RwZuiUNK5VsBRFfGLHnJVXyN
       secret-key: ZEY3hRCBi5VL6JibQEp6KNcg7yR8iODC
 logging:
   level:
-    com:
-      yonyougov:
-        bootchat: debug
+    root: debug
+yondif:
+  proxy:
+    enable: true
+    ip: 10.16.22.246
+    port: 8889
+    domains:
+      - aip.baidubce.com
