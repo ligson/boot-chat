@@ -21,15 +21,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
 
 
 @Configuration
@@ -106,13 +103,14 @@ public class ChatConfig {
         WebClient.Builder builder = WebClient.builder();
 
         if (proxyConfig.isEnable()) {
-            HttpClient httpClient = HttpClient.create()
-                    .proxy(proxy -> proxy
-                            .type(ProxyProvider.Proxy.HTTP)
-                            .host(proxyConfig.getIp())
-                            .port(proxyConfig.getPort()));
-
-            builder.clientConnector(new ReactorClientHttpConnector(httpClient));
+            //TODO proxy
+//            HttpClient httpClient = HttpClient.create()
+//                    .proxy(proxy -> proxy
+//                            .type(ProxyProvider.Proxy.HTTP)
+//                            .host(proxyConfig.getIp())
+//                            .port(proxyConfig.getPort()));
+//
+//            builder.clientConnector(new ReactorClientHttpConnector(httpClient));
         }
 
         return new QianFanApi(resolvedBaseUrl, resolvedApiKey, resolvedSecretKey, restClientBuilder, builder,
