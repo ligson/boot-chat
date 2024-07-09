@@ -62,20 +62,23 @@ spring:
 #  level:
 #    root: info
 yondif:
+  jwt:
+    secret-key: "yNbJvsFhHF+Coih+GBCiqnvb2eZADBeOUeZQF7joKpk="
   cors:
     allowed-origins:
       - http://localhost:8080
       - http://127.0.0.1:8080
+      - http://localhost:52768
   proxy:
     enable: true
     ip: 10.16.22.246
     port: 8889
     domains:
       - aip.baidubce.com
-server:
-  servlet:
-    context-path: /${spring.application.name}/
-  port: 8080
+#server:
+#  servlet:
+#    context-path: /${spring.application.name}/
+#  port: 8080
 #logging:
 #  level:
 #    org:

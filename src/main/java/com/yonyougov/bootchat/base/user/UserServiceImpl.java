@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @SneakyThrows
     public WebResult authByPwd(AuthByPwdReq authByPwdReq) {
-        User user = userDao.findOne(QUser.user.code.eq(authByPwdReq.getCode())).orElseThrow(() -> new BussinessException(String.format("用户名%s不存在", authByPwdReq.getCode())));
+        User user = userDao.findOne(QUser.user.code.eq(authByPwdReq.getEmail())).orElseThrow(() -> new BussinessException(String.format("邮箱%s不存在", authByPwdReq.getEmail())));
         String password = passwordEncoder.encode(authByPwdReq.getPassword());
         if (user.getPassword().equals(password)) {
             String token = DigestUtils.md5Hex(user.getName() + "#" + UUID.randomUUID());
@@ -59,9 +59,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public WebResult registerByPwd(RegisterByPwdReq registerByPwdReq) {
-        long count = userDao.count(QUser.user.name.eq(registerByPwdReq.getName()));
+        long count = userDao.count(QUser.user.email.eq(registerByPwdReq.getEmail()));
         if (count > 0) {
-            return WebResult.newErrorInstance("用户名已存在");
+            return WebResult.newErrorInstance("该邮箱已存在");
         }
         if (!passwordMatch(registerByPwdReq.getPassword())) {
             return WebResult.newErrorInstance("密码不满足要求");
@@ -69,10 +69,14 @@ public class UserServiceImpl implements UserService {
         if (!captchaService.verify(registerByPwdReq.getCaptchaCode(), registerByPwdReq.getCaptchaKey())) {
             return WebResult.newErrorInstance("验证码错误");
         }
+        if (!registerByPwdReq.getEmail().endsWith("@yonyou.com")) {
+            return WebResult.newErrorInstance("邮箱后缀必须为@yonyou.com");
+        }
         User user = new User();
         user.setName(registerByPwdReq.getName());
         String password = passwordEncoder.encode(registerByPwdReq.getPassword());
         user.setPassword(password);
+        user.setEmail(registerByPwdReq.getEmail());
         user.setCode(registerByPwdReq.getCode());
         userDao.save(user);
         return WebResult.newSuccessInstance();
@@ -93,8 +97,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDao.findOne(QUser.user.name.eq(username)).orElseThrow(() -> new BussinessException("用户名{}不存在", username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userDao.findOne(QUser.user.email.eq(email)).orElseThrow(() -> new BussinessException("邮箱{}不存在", email));
         return new XAssnUserDetails(user);
     }
+
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        return null;
+//    }
 }

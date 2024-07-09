@@ -9,10 +9,9 @@ import lombok.Setter;
 @Setter
 public class AuthByPwdReq extends BaseReq {
     @NotBlank
-    private String code;
+    private String email;
     @NotBlank
     private String password;
-
     @NotBlank
     private String captchaCode;
     @NotBlank

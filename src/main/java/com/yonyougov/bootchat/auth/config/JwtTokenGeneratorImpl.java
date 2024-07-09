@@ -42,8 +42,9 @@ public class JwtTokenGeneratorImpl implements TokenGenerator {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
         byte[] apiKeySecretBytes = Base64.decodeBase64(secretKey);
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+
         return Jwts.builder().claim("id", user.getId())
-                .claim("name", user.getName())
+                .claim("email", user.getEmail())
                 .signWith(signingKey, signatureAlgorithm)
                 .setExpiration(DateUtils.addMilliseconds(new Date(), tokenTimeout))
                 .serializeToJsonWith(stringMap -> cruxSerializer.serialize(stringMap).getBytes(StandardCharsets.UTF_8))

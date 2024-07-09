@@ -16,6 +16,8 @@ public class RegisterByPwdReq extends BaseReq {
     @NotBlank
     private String code;
     @NotBlank
+    private String email;
+    @NotBlank
     private String captchaCode;
     @NotBlank
     private String captchaKey;

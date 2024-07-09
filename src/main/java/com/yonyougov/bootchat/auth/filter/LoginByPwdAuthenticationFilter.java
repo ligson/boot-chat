@@ -59,7 +59,7 @@ public class LoginByPwdAuthenticationFilter extends UsernamePasswordAuthenticati
             throw new AuthParamErrorException("参数错误");
         }
         // 获取用户名和密码
-        String username = auth.getCode();
+        String username = auth.getEmail();
         String password = auth.getPassword();
         boolean check = captchaService.verify(auth.getCaptchaCode(), auth.getCaptchaKey());
         if (!check) {

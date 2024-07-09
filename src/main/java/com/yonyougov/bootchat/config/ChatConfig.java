@@ -112,7 +112,7 @@ public class ChatConfig {
 //
 //            builder.clientConnector(new ReactorClientHttpConnector(httpClient));
         }
-
+//        builder.clientConnector()
         return new QianFanApi(resolvedBaseUrl, resolvedApiKey, resolvedSecretKey, restClientBuilder, builder,
                 responseErrorHandler);
     }
