@@ -36,7 +36,7 @@ public class BaseEntity {
     @CreatedDate
     @Column
     @Comment("创建时间")
-    private Date createTime;
+        private Date createTime;
 
     //"修改人"
     @LastModifiedBy
