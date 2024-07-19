@@ -31,15 +31,16 @@ public class QianfanServiceImpl implements QianfanService {
 
     @Override
     public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
-        if (!StringUtils.isEmpty(chatMessage.getLastAnswer())) {
-            ChatMsg chatMsg = new ChatMsg();
-            chatMsg.setMsg(chatMessage.getLastAnswer());
-            chatMsg.setRole("assistant");
-            chatMsg.setUserId(userId);
-            //使上次回答的消息时间早于当前时间，以便于排序
-            chatMsg.setCreateTime(new Date(System.currentTimeMillis() - 1000));
-            chatMsgService.save(chatMsg);
-        }
+//        if (!StringUtils.isEmpty(chatMessage.getLastAnswer())) {
+//            ChatMsg chatMsg = new ChatMsg();
+//            chatMsg.setMsg(chatMessage.getLastAnswer());
+//            chatMsg.setRole("assistant");
+//            chatMsg.setUserId(userId);
+//            //使上次回答的消息时间早于当前时间，以便于排序
+//            chatMsg.setCreateTime(new Date(System.currentTimeMillis() - 1000));
+//            chatMsg.setUpdateTime(new Date(System.currentTimeMillis() - 1000));
+//            chatMsgService.save(chatMsg);
+//        }
         if (!StringUtils.isEmpty(chatMessage.getProblem())) {
             ChatMsg chatMsg = new ChatMsg();
             chatMsg.setMsg(chatMessage.getProblem());
@@ -58,6 +59,10 @@ public class QianfanServiceImpl implements QianfanService {
                         return new UserMessage(m.getMsg());
                     }
                 }).collect(Collectors.toList()));
-        return chatClient.stream(prompt);
+        Flux<ChatResponse> result = chatClient.stream(prompt);
+        return result.map(response -> {
+//            System.out.println(response.getResult().getOutput().getContent());
+            return response;
+        });
     }
 }
