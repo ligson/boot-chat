@@ -9,6 +9,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.stereotype.Service;
@@ -31,16 +32,6 @@ public class QianfanServiceImpl implements QianfanService {
 
     @Override
     public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
-//        if (!StringUtils.isEmpty(chatMessage.getLastAnswer())) {
-//            ChatMsg chatMsg = new ChatMsg();
-//            chatMsg.setMsg(chatMessage.getLastAnswer());
-//            chatMsg.setRole("assistant");
-//            chatMsg.setUserId(userId);
-//            //使上次回答的消息时间早于当前时间，以便于排序
-//            chatMsg.setCreateTime(new Date(System.currentTimeMillis() - 1000));
-//            chatMsg.setUpdateTime(new Date(System.currentTimeMillis() - 1000));
-//            chatMsgService.save(chatMsg);
-//        }
         if (!StringUtils.isEmpty(chatMessage.getProblem())) {
             ChatMsg chatMsg = new ChatMsg();
             chatMsg.setMsg(chatMessage.getProblem());
@@ -60,9 +51,24 @@ public class QianfanServiceImpl implements QianfanService {
                     }
                 }).collect(Collectors.toList()));
         Flux<ChatResponse> result = chatClient.stream(prompt);
-        return result.map(response -> {
-//            System.out.println(response.getResult().getOutput().getContent());
-            return response;
-        });
+        return result.collectList()
+                .flatMapMany(list -> {
+                    // 处理list中的数据，例如将它们连接成一个字符串
+                    String fullAnswer = list.stream()
+                            .map(ChatResponse::getResult)
+                            .map(Generation::getOutput)
+                            .map(AssistantMessage::getContent)
+                            .reduce((a, b) -> a + b)
+                            .orElse("");
+
+                    ChatMsg chatMsg = new ChatMsg();
+                    chatMsg.setMsg(fullAnswer);
+                    chatMsg.setRole("assistant");
+                    chatMsg.setUserId(userId);
+                    chatMsg.setCreateTime(new Date());
+                    chatMsgService.save(chatMsg);
+                    return Flux.fromIterable(list);
+                });
+
     }
 }
