@@ -18,7 +18,7 @@ spring:
     password: ${app.db.password}
   jpa:
     hibernate:
-      #ddl-auto: create
+    #ddl-auto: create
     database-platform: org.hibernate.dialect.MySQLDialect
     open-in-view: true
   data:
@@ -56,6 +56,13 @@ spring:
         enabled: true
       api-key: RwZuiUNK5VsBRFfGLHnJVXyN
       secret-key: ZEY3hRCBi5VL6JibQEp6KNcg7yR8iODC
+    zhipuai:
+      api-key: 3c946907e6feb87851b98cee2c3d642e.FoViudQbUf4TxmQh
+      image:
+        enabled: true
+        options:
+          model: "cogview-3"
+        api-key: 3c946907e6feb87851b98cee2c3d642e.FoViudQbUf4TxmQh
   main:
     allow-bean-definition-overriding: true
 #logging:
