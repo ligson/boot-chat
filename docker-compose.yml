@@ -1,0 +1,22 @@
+
+
+services:
+  boot-chat:
+    image: dockerhub.yonyougov.top/ligson/boot-chat:0.0.1-SNAPSHOT
+    container_name: boot-chat
+    restart: always
+    #command:  --innodb_use_native_aio=0
+    #environment:
+#      MYSQL_ROOT_PASSWORD: oMaY&&Ay
+#    volumes:
+#      - ./data/var/lib/mysql:/var/lib/mysql
+#      - ./data/etc/my.cnf:/etc/my.cnf
+    ports:
+      - "18080:8080"
+# volumes:
+#   data:
+
+networks:
+  default:
+    external: true
+    name: mynetwork
