@@ -3,7 +3,6 @@ package com.yonyougov.bootchat.auth.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yonyougov.bootchat.vo.ErrorType;
 import com.yonyougov.bootchat.vo.WebResult;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ public class XAssn403AuthenticationEntryPoint implements AuthenticationEntryPoin
     }
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         String stace = ExceptionUtils.getStackTrace(authException);
         log.error("认证异常:{},stace:{}", authException.getMessage(), stace);
         WebResult web = WebResult.newErrorInstance(authException.getMessage());

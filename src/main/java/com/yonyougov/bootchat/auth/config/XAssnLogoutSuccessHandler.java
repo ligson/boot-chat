@@ -2,7 +2,6 @@ package com.yonyougov.bootchat.auth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yonyougov.bootchat.vo.WebResult;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ public class XAssnLogoutSuccessHandler implements LogoutSuccessHandler {
     }
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MimeTypeUtils.APPLICATION_JSON_VALUE);
