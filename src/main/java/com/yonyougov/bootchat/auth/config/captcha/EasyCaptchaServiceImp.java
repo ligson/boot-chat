@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +21,8 @@ public class EasyCaptchaServiceImp implements CaptchaService {
     @Override
     public WebResult generate() {
         // 使用gif验证码
-        GifCaptcha gifCaptcha = new GifCaptcha(130, 48, 4);
+        Font font = new Font(" DejaVu Serif", Font.PLAIN, 20);
+        GifCaptcha gifCaptcha = new GifCaptcha(130, 48, 4,font);
         String verCode = gifCaptcha.text().toLowerCase();
         String verKey = UUID.randomUUID().toString();
         BoundValueOperations<String, String> ops = stringRedisTemplate.boundValueOps("iboot-chat:captcha:" + verKey);
