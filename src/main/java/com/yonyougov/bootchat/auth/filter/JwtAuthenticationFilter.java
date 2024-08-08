@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -47,8 +48,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     XAssnUserDetails userDetails = new XAssnUserDetails(user);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
                     log.info("authenticated user with username :{}", user.getName());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    // 设置 SecurityContext
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
+                    context.setAuthentication(authentication);
+                    SecurityContextHolder.setContext(context);
+
+                    // 将当前用户放入 sessionContext
                     sessionContext.setCurrentUser(user);
+
                 }
             }
         }
