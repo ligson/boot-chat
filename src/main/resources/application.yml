@@ -4,6 +4,10 @@ app:
     username: root
     password: "BAPaS#c5Xm5J"
 spring:
+#  elasticsearch:
+#    uris: http://10.16.26.132:34998
+#    username: elastic
+#    password: BIPaS#c5Xm5J
   datasource:
     hikari:
       driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -32,21 +36,25 @@ spring:
     base-path: /chat-be
   ai:
     vectorstore:
+
       milvus:
         client:
           host: 10.16.26.105
           port: 19530
-          #username: "root"
-          #password: "milvus"
+#          username: "root"
+#          password: "milvus"
         databaseName: "default"
         collectionName: "vector_store"
-        embeddingDimension: 1536
         indexType: IVF_FLAT
         metricType: COSINE
+        embedding-dimension: 8192
+
     ollama:
       base-url: http://127.0.0.1:11434
       chat:
-        model: "gemma:2b"
+        model: "qwen2:1.5b"
+      embedding:
+        model:  "qwen2:1.5b"
     qianfan:
       chat:
         base-url: https://aip.baidubce.com/rpc/2.0/ai_custom
@@ -78,7 +86,7 @@ yondif:
       - http://localhost:52768
       - https://ydf-i.yonyougov.top
   proxy:
-    enable: true
+    enable: false
     ip: 10.16.22.246
     port: 8889
     domains:
@@ -87,8 +95,10 @@ server:
   servlet:
     context-path: /${spring.application.name}
 #  port: 8080
-#logging:
-#  level:
-#    org:
-#      springframework:
-#        security: DEBUG
+logging:
+  level:
+    com:
+      yonyougov: DEBUG
+    org:
+      springframework:
+        security: DEBUG

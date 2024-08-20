@@ -29,6 +29,7 @@ public class SecurityFilterChainConfig {
             "/api/user/me",
             "/qianfan/ai/generateStream/**",
             "/api/login/**",
+            "/api/ai/test**",
             "/api/register/**"
     };
 

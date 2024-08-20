@@ -46,7 +46,14 @@ public class ChatConfig {
     @ConditionalOnMissingBean
     @ConditionalOnClass(OllamaEmbeddingModel.class)
     public MilvusVectorStore vectorStore(MilvusServiceClient milvusClient, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel, MilvusVectorStoreProperties properties) {
-        MilvusVectorStore.MilvusVectorStoreConfig config = MilvusVectorStore.MilvusVectorStoreConfig.builder().withCollectionName(properties.getCollectionName()).withDatabaseName(properties.getDatabaseName()).withIndexType(IndexType.valueOf(properties.getIndexType().name())).withMetricType(MetricType.valueOf(properties.getMetricType().name())).withIndexParameters(properties.getIndexParameters()).withEmbeddingDimension(properties.getEmbeddingDimension()).build();
+        MilvusVectorStore.MilvusVectorStoreConfig config = MilvusVectorStore.MilvusVectorStoreConfig.builder().withCollectionName(properties.getCollectionName()).
+                withDatabaseName(properties.getDatabaseName())
+                .withIndexType(IndexType.valueOf(properties.getIndexType().name()))
+                .withMetricType(MetricType.valueOf(properties.getMetricType().name()))
+                .withIndexParameters(properties.getIndexParameters())
+                .withEmbeddingDimension(8192)
+                .build();
+
         return new MilvusVectorStore(milvusClient, embeddingModel, config, properties.isInitializeSchema());
     }
 
