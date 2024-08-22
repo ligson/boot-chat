@@ -12,4 +12,5 @@ public interface QianfanService {
     Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage);
     void AddVectorStore();
     List<File> getFileList();
+    void saveFile(String tooken) throws Exception;
 }

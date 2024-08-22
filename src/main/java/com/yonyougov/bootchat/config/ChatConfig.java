@@ -54,7 +54,7 @@ public class ChatConfig {
                 .withEmbeddingDimension(8192)
                 .build();
 
-        return new MilvusVectorStore(milvusClient, embeddingModel, config, properties.isInitializeSchema());
+        return new MilvusVectorStore(milvusClient, embeddingModel, properties.isInitializeSchema());
     }
 
     @Bean

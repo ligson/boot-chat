@@ -2,6 +2,7 @@ package com.yonyougov.bootchat.qianfan.service;
 
 import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
 import com.yonyougov.bootchat.base.chatmsg.ChatMsgService;
+import com.yonyougov.bootchat.util.SaveWikeUtil;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
@@ -74,12 +75,10 @@ public class QianfanServiceImpl implements QianfanService {
             chatMsg.setCreateTime(new Date(System.currentTimeMillis()));
             chatMsgService.save(chatMsg);
         }
-//        List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
 
         prompt.getInstructions().add(new UserMessage(p.toString()));
         Flux<ChatResponse> result = chatClient.stream(prompt);
-//        Flux<ChatResponse> result = chatClient.stream(p);
-//        chatClient.stream(p);
+
         return result.collectList()
                 .flatMapMany(list -> {
                     // 处理list中的数据，例如将它们连接成一个字符串
@@ -114,6 +113,13 @@ public class QianfanServiceImpl implements QianfanService {
             }
         }
         return fileList;
+    }
+
+    @Override
+    @Async
+    public void saveFile(String tooken) throws Exception {
+        SaveWikeUtil saveWikeUtil = new SaveWikeUtil();
+        saveWikeUtil.saveWike(tooken,filePath);
     }
 
 

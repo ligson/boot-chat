@@ -78,7 +78,7 @@ spring:
 #    root: info
 yondif:
   file:
-    path:   "E://data/wiki"
+    path:   "/data/chat/doc"
   jwt:
     secret-key: "yNbJvsFhHF+Coih+GBCiqnvb2eZADBeOUeZQF7joKpk="
   cors:
