@@ -19,6 +19,8 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -114,7 +116,10 @@ public class QianfanServiceImpl implements QianfanService {
         return fileList;
     }
 
+
     @Override
+    @Async
+    @Scheduled(cron = "0 0 0 * * ?")
     public void AddVectorStore() {
         List<Document> allDoc = vectorStore.similaritySearch("");
         List<File> fileList = getFileList();
