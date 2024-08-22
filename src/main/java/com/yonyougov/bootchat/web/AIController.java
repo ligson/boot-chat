@@ -1,23 +1,25 @@
 package com.yonyougov.bootchat.web;
 
-//import co.elastic.clients.elasticsearch.core.SearchRequest;
 
+
+import com.yonyougov.bootchat.qianfan.service.QianfanService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +28,14 @@ import java.util.Map;
 public class AIController {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
+    private final QianfanService qianfanService;
     @Value("classpath:chat_templates/rag.tpl")
     private Resource promptResource;
 
-    public AIController(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, VectorStore vectorStore) {
+    public AIController(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, VectorStore vectorStore, QianfanService qianfanService) {
         this.chatClient = builder.build();
         this.vectorStore = vectorStore;
+        this.qianfanService = qianfanService;
     }
 
     @GetMapping("/chat")
@@ -44,17 +48,34 @@ public class AIController {
 
     @GetMapping("/test")
     public String test() throws MalformedURLException {
-        Resource resource = new UrlResource("https://zwfile.yonyougov.top/share/tmp/tesr.txt");
+//        Resource resource = new UrlResource("https://zwfile.yonyougov.top/share/tmp/tesr.txt");
 
-
-        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+        List<Document> allDoc = vectorStore.similaritySearch("");
+        List<File> fileList = qianfanService.getFileList();
+        if (fileList == null || fileList.isEmpty()) {
+            throw new RuntimeException("文件列表为空");
+        }
+        List<Document> documents = new ArrayList<>();
+        for (File file : fileList) {
+            if (allDoc.stream().noneMatch(doc -> doc.getMetadata().get("source").equals(file.getName()))) {
+                Resource resource = new FileSystemResource(file);
+                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+                documents.addAll(tikaDocumentReader.get());
+            } else {
+                System.out.println(file.getName() + " 文件已缓存");
+            }
+        }
+//        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
 //        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader("chat_templates/YonDiF替换基础镜像.pdf");
-        vectorStore.add(tikaDocumentReader.get());
+//        return vectorStore.getName();
+        if (!documents.isEmpty()) {
+            vectorStore.add(documents);
+        }
         return "ok";
     }
 
     @GetMapping("/test2")
-    public Integer test2()  {
+    public Integer test2() {
         List<Document> yonDif = vectorStore.similaritySearch("用友的一个产品");
 //        return "ok";
         return yonDif.size();
