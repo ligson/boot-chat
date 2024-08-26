@@ -47,7 +47,11 @@ public class ChatController {
     public Map generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
         return Map.of("generation", chatClient.call(message));
     }
-
+    @PostMapping("/ai/saveAllWiki")
+    public WebResult saveAllWiki(@RequestBody String tooken) throws Exception {
+        qianFanService.saveFile(tooken);
+        return WebResult.newSuccessInstance();
+    }
     //        @PostMapping("/ai/generateStream")
 //    public Flux<ChatResponse> generateStream(@RequestBody List<ChatMessage> messages) {
 //        qianFanService.stream();

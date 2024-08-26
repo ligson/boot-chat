@@ -26,9 +26,10 @@ public class SecurityFilterChainConfig {
     private final CorsConfigurationSource corsConfigurationSource;
     private final String[] IGNORE_URLS = new String[]{
             "/api/captcha/**",
-//            "/api/user/me",
+            "/api/user/me",
             "/qianfan/ai/generateStream/**",
             "/api/login/**",
+            "/api/ai/test**",
             "/api/register/**"
     };
 
