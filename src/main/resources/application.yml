@@ -21,6 +21,7 @@ spring:
     #ddl-auto: create
     database-platform: org.hibernate.dialect.MySQLDialect
     open-in-view: true
+
   data:
     redis:
       host: 10.16.24.54
@@ -30,6 +31,11 @@ spring:
     name: boot-chat
   webflux:
     base-path: /chat-be
+  minio:
+    endpoint: https://minio-oss.yonyougov.top
+    accessKey: mpBzSRtOuNoIA9PP
+    secretKey: 6DCki2PzfXuAq7DGYw9gzWzhJj0eV0xm
+    bucketName: chat
   ai:
     vectorstore:
       milvus:
@@ -57,12 +63,12 @@ spring:
       api-key: RwZuiUNK5VsBRFfGLHnJVXyN
       secret-key: ZEY3hRCBi5VL6JibQEp6KNcg7yR8iODC
     zhipuai:
-      api-key: 3c946907e6feb87851b98cee2c3d642e.FoViudQbUf4TxmQh
+      api-key: c835193c7685b599f9f6bdb6893284d9.RnUsOrYmMZorOvYB
       image:
         enabled: true
         options:
           model: "cogview-3"
-        api-key: 3c946907e6feb87851b98cee2c3d642e.FoViudQbUf4TxmQh
+        api-key: c835193c7685b599f9f6bdb6893284d9.RnUsOrYmMZorOvYB
   main:
     allow-bean-definition-overriding: true
 #logging:
@@ -75,16 +81,16 @@ yondif:
     allowed-origins:
       - http://localhost:8080
       - http://127.0.0.1:8080
-      - http://localhost:52768
+      - http://localhost:59542
   proxy:
     enable: true
     ip: 10.16.22.246
     port: 8889
     domains:
       - aip.baidubce.com
-#server:
-#  servlet:
-#    context-path: /${spring.application.name}/
+server:
+  servlet:
+    context-path: /${spring.application.name}
 #  port: 8080
 #logging:
 #  level:

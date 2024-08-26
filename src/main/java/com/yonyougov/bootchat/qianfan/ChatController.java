@@ -1,6 +1,9 @@
 package com.yonyougov.bootchat.qianfan;
 
 import com.yonyougov.bootchat.fw.context.SessionContext;
+import com.yonyougov.bootchat.minio.file.FileMsg;
+import com.yonyougov.bootchat.minio.file.FileMsgService;
+import com.yonyougov.bootchat.minio.util.MinioUtil;
 import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
 import com.yonyougov.bootchat.qianfan.service.QianfanService;
 
@@ -11,10 +14,13 @@ import org.springframework.ai.image.ImageResponse;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiImageModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RequestMapping("/qianfan")
 @RestController
@@ -24,6 +30,11 @@ public class ChatController {
     private final QianfanService qianFanService;
     private final ZhiPuAiImageModel zhiPuAiImageModel;
     private final SessionContext sessionContext;
+    @Autowired
+    private MinioUtil minioUtil;
+
+    @Autowired
+    private FileMsgService fileMsgService;
 
     public ChatController(QianFanChatModel chatClient, QianfanService qianFanService, ZhiPuAiImageModel zhiPuAiImageModel, SessionContext sessionContext) {
         this.chatClient = chatClient;
@@ -55,7 +66,20 @@ public class ChatController {
         String image = zhiPuAiImageModel.call(
                 new ImagePrompt(messages.getProblem())
         ).getResult().getOutput().getUrl();
-        return WebResult.newSuccessInstance().putData("image", image);
+//        将图片存入minio
+        String fileName = minioUtil.uploadImageFromUrl(image);
+        if (null != fileName) {
+           //从数据库中查寻图片信息并返回数据
+            FileMsg fileMsg = fileMsgService.findByFileName(fileName);
+            if (null == fileMsg) {
+                throw new RuntimeException("通过fileName查询不到图片信息");
+            }
+            WebResult webResult = WebResult.newInstance();
+            webResult.putData("url",fileMsg.getLocalDirectory());
+            webResult.putData("type",fileMsg.getFileType());
+            return webResult;
+        }
+        return WebResult.newErrorInstance("图片上传失败");
     }
 
     @PostMapping("/ai/generateStream")
