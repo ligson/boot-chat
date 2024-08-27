@@ -39,7 +39,7 @@ public class QianfanServiceImpl implements QianfanService {
     private final ChatMsgService chatMsgService;
     @Value("${yondif.file.path}")
     String filePath;
-    @Value("classpath:chat_templates/rag.tpl")
+    @Value("classpath:chat_templates/rag2.tpl")
     private Resource promptResource;
 
     public QianfanServiceImpl(QianFanChatModel chatClient, VectorStore vectorStore, ChatMsgService chatMsgService) {
@@ -116,7 +116,7 @@ public class QianfanServiceImpl implements QianfanService {
     }
 
     @Override
-    @Async
+//    @Async
     public void saveFile(String tooken) throws Exception {
         SaveWikeUtil saveWikeUtil = new SaveWikeUtil();
         saveWikeUtil.saveWike(tooken,filePath);

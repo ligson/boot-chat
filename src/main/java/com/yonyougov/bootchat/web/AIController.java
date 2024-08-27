@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +30,7 @@ public class AIController {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final QianfanService qianfanService;
-    @Value("classpath:chat_templates/rag.tpl")
+    @Value("classpath:chat_templates/rag2.tpl")
     private Resource promptResource;
 
     public AIController(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, VectorStore vectorStore, QianfanService qianfanService) {
@@ -48,23 +49,24 @@ public class AIController {
 
     @GetMapping("/test")
     public String test() throws MalformedURLException {
-//        Resource resource = new UrlResource("https://zwfile.yonyougov.top/share/tmp/tesr.txt");
-
-        List<Document> allDoc = vectorStore.similaritySearch("");
-        List<File> fileList = qianfanService.getFileList();
-        if (fileList == null || fileList.isEmpty()) {
-            throw new RuntimeException("文件列表为空");
-        }
-        List<Document> documents = new ArrayList<>();
-        for (File file : fileList) {
-            if (allDoc.stream().noneMatch(doc -> doc.getMetadata().get("source").equals(file.getName()))) {
-                Resource resource = new FileSystemResource(file);
-                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
-                documents.addAll(tikaDocumentReader.get());
-            } else {
-                System.out.println(file.getName() + " 文件已缓存");
-            }
-        }
+        Resource resource = new UrlResource("https://zwfile.yonyougov.top/share/tmp/YonDiF替换基础镜像.pdf");
+        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+        List<Document> documents = new ArrayList<>(tikaDocumentReader.get());
+//        List<Document> allDoc = vectorStore.similaritySearch("");
+//        List<File> fileList = qianfanService.getFileList();
+//        if (fileList == null || fileList.isEmpty()) {
+//            throw new RuntimeException("文件列表为空");
+//        }
+//        List<Document> documents = new ArrayList<>();
+//        for (File file : fileList) {
+//            if (allDoc.stream().noneMatch(doc -> doc.getMetadata().get("source").equals(file.getName()))) {
+//                Resource resource = new FileSystemResource(file);
+//                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+//                documents.addAll(tikaDocumentReader.get());
+//            } else {
+//                System.out.println(file.getName() + " 文件已缓存");
+//            }
+//        }
 //        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
 //        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader("chat_templates/YonDiF替换基础镜像.pdf");
 //        return vectorStore.getName();
