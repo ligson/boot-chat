@@ -1,30 +1,19 @@
 package com.yonyougov.bootchat.config;
 
-import io.milvus.client.MilvusServiceClient;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
 import org.springframework.ai.autoconfigure.chat.client.ChatClientBuilderConfigurer;
 import org.springframework.ai.autoconfigure.qianfan.QianFanChatProperties;
 import org.springframework.ai.autoconfigure.qianfan.QianFanConnectionProperties;
-import org.springframework.ai.autoconfigure.vectorstore.milvus.MilvusVectorStoreProperties;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.qianfan.api.QianFanApi;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
-import org.springframework.ai.vectorstore.MilvusVectorStore;
-
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-
-import reactor.netty.http.client.HttpClient;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
@@ -32,6 +21,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
 
@@ -45,7 +35,7 @@ public class ChatConfig {
     }
 
 
-        @Bean
+   /* @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(OllamaEmbeddingModel.class)
     public MilvusVectorStore vectorStore(MilvusServiceClient milvusClient, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel, MilvusVectorStoreProperties properties) {
@@ -58,7 +48,7 @@ public class ChatConfig {
                 .build();
 
         return new MilvusVectorStore(milvusClient, embeddingModel, properties.isInitializeSchema());
-    }
+    }*/
 //    @Bean
 //    @ConditionalOnMissingBean
 //    @ConditionalOnClass(OllamaEmbeddingModel.class)
