@@ -47,24 +47,18 @@ public class ChatController {
     public Map generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
         return Map.of("generation", chatClient.call(message));
     }
+
     @PostMapping("/ai/saveAllWiki")
     public WebResult saveAllWiki(@RequestBody String tooken) throws Exception {
         qianFanService.saveFile(tooken);
         return WebResult.newSuccessInstance();
     }
-    //        @PostMapping("/ai/generateStream")
-//    public Flux<ChatResponse> generateStream(@RequestBody List<ChatMessage> messages) {
-//        qianFanService.stream();
-//        Prompt prompt = new Prompt(
-//                messages.stream().map(m -> {
-//                    if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
-//                        return new AssistantMessage(m.getContent());
-//                    } else {
-//                        return new UserMessage(m.getContent());
-//                    }
-//                }).collect(Collectors.toList()));
-//        return chatClient.stream(prompt);
-//    }
+
+    @GetMapping("/ai/test")
+    public void test() {
+        qianFanService.AddVectorStore();
+    }
+
     @PostMapping("/ai/image")
     public WebResult getImage(@RequestBody ChatMessage2 messages) {
 
@@ -95,6 +89,7 @@ public class ChatController {
         return WebResult.newErrorInstance("图片上传失败");
 //            return image;
     }
+
 
     @PostMapping("/ai/generateStream")
     public Flux<ChatResponse> generateStream(@RequestBody ChatMessage2 messages) {
