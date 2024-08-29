@@ -13,7 +13,9 @@ import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.qianfan.api.QianFanApi;
+import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.MilvusVectorStore;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,6 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+
 import reactor.netty.http.client.HttpClient;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
@@ -42,7 +45,7 @@ public class ChatConfig {
     }
 
 
-    @Bean
+        @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(OllamaEmbeddingModel.class)
     public MilvusVectorStore vectorStore(MilvusServiceClient milvusClient, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel, MilvusVectorStoreProperties properties) {
@@ -56,6 +59,12 @@ public class ChatConfig {
 
         return new MilvusVectorStore(milvusClient, embeddingModel, properties.isInitializeSchema());
     }
+//    @Bean
+//    @ConditionalOnMissingBean
+//    @ConditionalOnClass(OllamaEmbeddingModel.class)
+//    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel) {
+//        return new PgVectorStore(jdbcTemplate, embeddingModel);
+//    }
 
     @Bean
     @Scope("prototype")
@@ -65,6 +74,11 @@ public class ChatConfig {
         ChatClient.Builder builder = ChatClient.builder(ollamaChatModel);
         return chatClientBuilderConfigurer.configure(builder);
 
+    }
+
+    @Bean
+    public TokenTextSplitter tokenTextSplitter() {
+        return new TokenTextSplitter();
     }
 
     @Bean

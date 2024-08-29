@@ -3,10 +3,20 @@ package com.yonyougov.bootchat.qianfan.service;
 import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
 import com.yonyougov.bootchat.base.chatmsg.ChatMsgService;
 import com.yonyougov.bootchat.util.SaveWikeUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.reader.ExtractedTextFormatter;
+import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
+import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
+import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
@@ -33,7 +43,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class QianfanServiceImpl implements QianfanService {
+    private final ChatClient ollamaChatClient;
+    private final OpenAiChatModel openAiChatModel;
+    private final ZhiPuAiChatModel zhiPuAiChatModel;
+    private final TokenTextSplitter tokenTextSplitter;
     private final QianFanChatModel chatClient;
     private final VectorStore vectorStore;
     private final ChatMsgService chatMsgService;
@@ -41,11 +56,17 @@ public class QianfanServiceImpl implements QianfanService {
     String filePath;
     @Value("classpath:chat_templates/rag2.tpl")
     private Resource promptResource;
+    @Value("${yondif.chat.model:qianfan}")
+    private String chatModel;
 
-    public QianfanServiceImpl(QianFanChatModel chatClient, VectorStore vectorStore, ChatMsgService chatMsgService) {
+    public QianfanServiceImpl(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, OpenAiChatModel openAiChatModel, ZhiPuAiChatModel zhiPuAiChatModel, TokenTextSplitter tokenTextSplitter, QianFanChatModel chatClient, VectorStore vectorStore, ChatMsgService chatMsgService) {
+        this.ollamaChatClient = builder.build();
+        this.zhiPuAiChatModel = zhiPuAiChatModel;
+        this.tokenTextSplitter = tokenTextSplitter;
         this.chatClient = chatClient;
         this.vectorStore = vectorStore;
         this.chatMsgService = chatMsgService;
+        this.openAiChatModel = openAiChatModel;
     }
 
     @Override
@@ -79,6 +100,16 @@ public class QianfanServiceImpl implements QianfanService {
         prompt.getInstructions().add(new UserMessage(p.toString()));
         Flux<ChatResponse> result = chatClient.stream(prompt);
 
+        if (chatModel.equals("qianfan")) {
+            result = chatClient.stream(prompt);
+        } else if (chatModel.equals("ollama")) {
+            ollamaChatClient.prompt().stream();
+        } else if (chatModel.equals("openai")) {
+            result = openAiChatModel.stream(prompt);
+        } else if (chatModel.equals("zhipu")) {
+            result = zhiPuAiChatModel.stream(prompt);
+        }
+
         return result.collectList()
                 .flatMapMany(list -> {
                     // 处理list中的数据，例如将它们连接成一个字符串
@@ -108,7 +139,7 @@ public class QianfanServiceImpl implements QianfanService {
             return fileList;
         }
         for (File file : files) {
-            if (file.isFile() && (file.getName().endsWith(".pdf") || file.getName().endsWith(".doc") || file.getName().endsWith(".docx") || file.getName().endsWith(".txt"))) {
+            if (file.isFile() && (file.getName().endsWith(".pdf") || file.getName().endsWith(".txt"))) {
                 fileList.add(file);
             }
         }
@@ -117,9 +148,9 @@ public class QianfanServiceImpl implements QianfanService {
 
     @Override
 //    @Async
-    public void saveFile(String tooken) throws Exception {
+    public void saveFile(String cookie) throws Exception {
         SaveWikeUtil saveWikeUtil = new SaveWikeUtil();
-        saveWikeUtil.saveWike(tooken,filePath);
+        saveWikeUtil.saveWiki(cookie, filePath);
     }
 
 
@@ -132,18 +163,32 @@ public class QianfanServiceImpl implements QianfanService {
         if (fileList == null || fileList.isEmpty()) {
             throw new RuntimeException("文件列表为空");
         }
-        List<Document> documents = new ArrayList<>();
         for (File file : fileList) {
-            if (allDoc.stream().noneMatch(doc -> doc.getMetadata().get("source").equals(file.getName()))) {
+            if (allDoc.stream().noneMatch(doc -> file.getName().equals(doc.getMetadata().get("source")))) {
+//                Resource resource = new FileSystemResource(file);
+//                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+//                documents.addAll(tikaDocumentReader.get());
                 Resource resource = new FileSystemResource(file);
-                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
-                documents.addAll(tikaDocumentReader.get());
+                PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder()
+                        .withPageExtractedTextFormatter(
+                                new ExtractedTextFormatter
+                                        .Builder()
+                                        .withNumberOfBottomTextLinesToDelete(3)
+                                        .withNumberOfTopPagesToSkipBeforeDelete(1)
+                                        .build()
+                        )
+                        .withPagesPerDocument(1)
+                        .build();
+                PagePdfDocumentReader pagePdfDocumentReader = new PagePdfDocumentReader(resource, config);
+//                documents.addAll(pagePdfDocumentReader.get());
+                try {
+                    vectorStore.add(tokenTextSplitter.apply(pagePdfDocumentReader.get()));
+                } catch (Exception e) {
+                    log.error("添加向量失败", e);
+                }
             } else {
                 System.out.println(file.getName() + " 文件已缓存");
             }
-        }
-        if (!documents.isEmpty()) {
-            vectorStore.add(documents);
         }
     }
 }

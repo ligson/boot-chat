@@ -16,7 +16,7 @@ public class SaveWikeUtil {
 
     String url = "https://zw-wiki.yyrd.com/plugins/pagetree/naturalchildren.action?decorator=none&excerpt=false&sort=position&reverse=false&disableLinks=false&expandCurrent=true&placement=sidebar&hasRoot=true&pageId=21631934&treeId=0&startDepth=0&mobile=false&ancestors=21631934&treePageId=21631934&_=1718088009917";
 
-    public void saveWike(String cookie, String filePath) throws Exception {
+    public void saveWiki(String cookie, String filePath) throws Exception {
         File rootFile = new File(filePath);
         SimpleHttpClient client = new SimpleHttpClient();
         String content = client.doGet(url, cookie);

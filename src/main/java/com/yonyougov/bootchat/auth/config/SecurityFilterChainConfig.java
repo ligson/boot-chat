@@ -27,9 +27,9 @@ public class SecurityFilterChainConfig {
     private final String[] IGNORE_URLS = new String[]{
             "/api/captcha/**",
             "/api/user/me",
-            "/qianfan/ai/generateStream/**",
             "/api/login/**",
             "/api/ai/test**",
+            "/qianfan/ai/test/**",
             "/api/register/**"
     };
 
