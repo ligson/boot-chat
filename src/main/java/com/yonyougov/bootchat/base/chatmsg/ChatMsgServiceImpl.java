@@ -1,6 +1,7 @@
 package com.yonyougov.bootchat.base.chatmsg;
 
 import com.querydsl.core.BooleanBuilder;
+import com.yonyougov.bootchat.minio.file.FileMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,20 @@ public class ChatMsgServiceImpl implements ChatMsgService {
         chatMsg.setCreateTime(new java.util.Date());
         chatMsg.setUpdateTime(new java.util.Date());
         chatMsg.setRole("assistant");
+        save(chatMsg);
+    }
+
+    @Override
+    public void saveMsg(String userId, String msg, FileMsg fileMsg) {
+        ChatMsg chatMsg = new ChatMsg();
+        chatMsg.setUserId(userId);
+        chatMsg.setMsg(msg);
+        chatMsg.setCreateTime(new java.util.Date());
+        chatMsg.setUpdateTime(new java.util.Date());
+        chatMsg.setRole("assistant");
+        chatMsg.setMsgType(fileMsg.getFileType());
+        chatMsg.setUri(fileMsg.getLocalDirectory());
+        chatMsg.setSize(fileMsg.getFileSize());
         save(chatMsg);
     }
 

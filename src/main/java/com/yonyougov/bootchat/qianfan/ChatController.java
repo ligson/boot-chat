@@ -67,23 +67,33 @@ public class ChatController {
 //    }
     @PostMapping("/ai/image")
     public WebResult getImage(@RequestBody ChatMessage2 messages) {
+
         String image = zhiPuAiImageModel.call(
                 new ImagePrompt(messages.getProblem())
         ).getResult().getOutput().getUrl();
-//        将图片存入minio
-        String fileName = minioUtil.uploadImageFromUrl(image);
+        //将图片存入minio，数据库
+        String fileName = minioUtil.uploadImageFromUrl(image,messages);
+        //从数据库中查寻图片信息并返回数据
         if (null != fileName) {
-           //从数据库中查寻图片信息并返回数据
             FileMsg fileMsg = fileMsgService.findByFileName(fileName);
             if (null == fileMsg) {
                 throw new RuntimeException("通过fileName查询不到图片信息");
             }
-            WebResult webResult = WebResult.newInstance();
-            webResult.putData("url",fileMsg.getLocalDirectory());
-            webResult.putData("type",fileMsg.getFileType());
+            WebResult webResult = WebResult.newSuccessInstance();
+
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("uri", fileMsg.getLocalDirectory());
+            result.put("type", "image");
+//            result.put("type", fileMsg.getFileType());
+            result.put("name", fileMsg.getFileName());
+            result.put("imageId", fileMsg.getId());
+            result.put("size", fileMsg.getFileSize());
+            webResult.setData(result);
+
             return webResult;
         }
         return WebResult.newErrorInstance("图片上传失败");
+//            return image;
     }
 
     @PostMapping("/ai/generateStream")

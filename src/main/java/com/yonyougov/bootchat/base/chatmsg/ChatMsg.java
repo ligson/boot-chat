@@ -37,5 +37,11 @@ public class ChatMsg extends BaseEntity {
 
     @Column
     private String msg;
+    @Column
+    private String msgType;
+    @Column
+    private String uri;
+    @Column
+    private Integer size;
 
 }

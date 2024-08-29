@@ -1,8 +1,12 @@
 package com.yonyougov.bootchat.minio.file;
 
+import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
+import com.yonyougov.bootchat.base.chatmsg.ChatMsgService;
 import com.yonyougov.bootchat.base.user.User;
 import com.yonyougov.bootchat.base.user.UserService;
 import com.yonyougov.bootchat.fw.context.SessionContext;
+import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
+import org.apache.tika.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +25,8 @@ public class FileMsgServiceImpl implements FileMsgService{
     private FileMsgDao fileMsgDao;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ChatMsgService chatMsgService;
     public FileMsgServiceImpl (SessionContext sessionContext) {
         this.sessionContext = sessionContext;
     }
@@ -41,9 +47,9 @@ public class FileMsgServiceImpl implements FileMsgService{
     }
 
     @Override
-    public FileMsg save(String fileName, Integer size,String url) {
-        String id = sessionContext.getCurrentUser().getId();
-        User user = userService.findById(id);
+    public FileMsg save(String fileName, Integer size, String url, ChatMessage2 chatMessage) {
+        String userId = sessionContext.getCurrentUser().getId();
+        User user = userService.findById(userId);
         int dotIndex = fileName.lastIndexOf('.');
         // 提取基础名称
         String uploadId = fileName.substring(0, dotIndex);
@@ -52,7 +58,11 @@ public class FileMsgServiceImpl implements FileMsgService{
         //封装对象
         FileMsg fileMsg =new FileMsg();
         fileMsg.setFileName(fileName);
-        fileMsg.setFileType(FileType);
+        //这里最好判断是什么类型
+        if (FileType.equals("png") || FileType.equals("jpg") || FileType.equals("jpeg") || FileType.equals("gif") || FileType.equals("bmp")) {
+            fileMsg.setFileType("image");
+        }else
+            fileMsg.setFileType("file"); //不是的话就换成别的类型
         fileMsg.setUploadId(uploadId);
         fileMsg.setLocalDirectory(url);
         fileMsg.setFileSize(size);
@@ -63,8 +73,28 @@ public class FileMsgServiceImpl implements FileMsgService{
         fileMsg.setModifier(user.getName());
         fileMsg.setId(uploadId);
         fileMsg.setPubts(Instant.now());
-        //保存并返回
+
+        //用户提问入库，聊天记录
+        if (!StringUtils.isEmpty(chatMessage.getProblem())) {
+            ChatMsg chatMsg = new ChatMsg();
+            chatMsg.setMsg(chatMessage.getProblem());
+            chatMsg.setRole("user");
+            chatMsg.setUserId(userId);
+            //使上次回答的消息时间早于当前时间，以便于排序
+            chatMsg.setCreateTime(new Date(System.currentTimeMillis()));
+            chatMsgService.save(chatMsg);
+        }
+        //睡眠一秒，等待数据库写入完成
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        //ai回复入库，聊天记录
+        chatMsgService.saveMsg(user.getId(),url,fileMsg);
+
         return fileMsgDao.save(fileMsg);
+
     }
 
 

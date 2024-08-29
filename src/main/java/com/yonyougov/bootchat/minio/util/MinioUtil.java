@@ -1,7 +1,9 @@
 package com.yonyougov.bootchat.minio.util;
 
+import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
 import com.yonyougov.bootchat.minio.config.MinioConfig;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
+import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
 import io.micrometer.common.util.StringUtils;
 import io.minio.*;
 import io.minio.http.Method;
@@ -130,11 +132,10 @@ public class MinioUtil {
     }
 
 
-    public String uploadImageFromUrl(String imageUrl) {
+    public String uploadImageFromUrl(String imageUrl, ChatMessage2 messages) {
         if (StringUtils.isBlank(imageUrl)) {
             throw new IllegalArgumentException("Image URL cannot be blank.");
         }
-
         String uploadId = UUID.randomUUID().toString().replace("-", "");
         String objectName = uploadId + getFileExtension(imageUrl);
 
@@ -157,7 +158,9 @@ public class MinioUtil {
 
             minioClient.putObject(objectArgs);
             //下载推动到minio后，存到数据库中
-            fileMsgService.save(objectName, data.length, preview(objectName));
+            fileMsgService.save(objectName, data.length, preview(objectName), messages);
+
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to upload image.", e);

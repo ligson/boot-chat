@@ -63,25 +63,27 @@ spring:
       api-key: RwZuiUNK5VsBRFfGLHnJVXyN
       secret-key: ZEY3hRCBi5VL6JibQEp6KNcg7yR8iODC
     zhipuai:
-      api-key: c835193c7685b599f9f6bdb6893284d9.RnUsOrYmMZorOvYB
+      api-key: 9660fddee18fded9bc303ab57d53c5a6.mdgfeOaeBoP1Raot
       image:
         enabled: true
         options:
           model: "cogview-3"
-        api-key: c835193c7685b599f9f6bdb6893284d9.RnUsOrYmMZorOvYB
+        api-key: 9660fddee18fded9bc303ab57d53c5a6.mdgfeOaeBoP1Raot
   main:
     allow-bean-definition-overriding: true
 #logging:
 #  level:
 #    root: info
 yondif:
+  file:
+    path: "E://data/wiki"
   jwt:
     secret-key: "yNbJvsFhHF+Coih+GBCiqnvb2eZADBeOUeZQF7joKpk="
   cors:
     allowed-origins:
       - http://localhost:8080
       - http://127.0.0.1:8080
-      - http://localhost:59542
+      - http://localhost:58698
   proxy:
     enable: true
     ip: 10.16.22.246
