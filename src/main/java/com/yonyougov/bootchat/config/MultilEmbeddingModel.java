@@ -24,7 +24,7 @@ public class MultilEmbeddingModel implements EmbeddingModel {
 
     public EmbeddingModel getEmbeddingModel() {
         for (EmbeddingModel embeddingModel : embeddingModels) {
-            if (embeddingModel.getClass().getName().toLowerCase().startsWith(type.toLowerCase())) {
+            if (embeddingModel.getClass().getName().toLowerCase().endsWith((type+"EmbeddingModel").toLowerCase())) {
                 return embeddingModel;
             }
         }
