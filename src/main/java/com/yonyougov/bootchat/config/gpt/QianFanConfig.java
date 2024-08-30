@@ -1,13 +1,12 @@
-package com.yonyougov.bootchat.config;
+package com.yonyougov.bootchat.config.gpt;
 
+import com.yonyougov.bootchat.config.ProxyConfig;
 import org.springframework.ai.autoconfigure.chat.client.ChatClientBuilderConfigurer;
 import org.springframework.ai.autoconfigure.qianfan.QianFanChatProperties;
 import org.springframework.ai.autoconfigure.qianfan.QianFanConnectionProperties;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.qianfan.api.QianFanApi;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,51 +23,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
-
 @Configuration
-public class ChatConfig {
-
+public class QianFanConfig {
     private final ProxyConfig proxyConfig;
 
-    public ChatConfig(ProxyConfig proxyConfig) {
+    public QianFanConfig(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
-    }
-
-
-   /* @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnClass(OllamaEmbeddingModel.class)
-    public MilvusVectorStore vectorStore(MilvusServiceClient milvusClient, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel, MilvusVectorStoreProperties properties) {
-        MilvusVectorStore.MilvusVectorStoreConfig config = MilvusVectorStore.MilvusVectorStoreConfig.builder().withCollectionName(properties.getCollectionName()).
-                withDatabaseName(properties.getDatabaseName())
-                .withIndexType(IndexType.valueOf(properties.getIndexType().name()))
-                .withMetricType(MetricType.valueOf(properties.getMetricType().name()))
-                .withIndexParameters(properties.getIndexParameters())
-                .withEmbeddingDimension(8192)
-                .build();
-
-        return new MilvusVectorStore(milvusClient, embeddingModel, properties.isInitializeSchema());
-    }*/
-//    @Bean
-//    @ConditionalOnMissingBean
-//    @ConditionalOnClass(OllamaEmbeddingModel.class)
-//    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel) {
-//        return new PgVectorStore(jdbcTemplate, embeddingModel);
-//    }
-
-    @Bean
-    @Scope("prototype")
-    @ConditionalOnClass(OllamaChatModel.class)
-    public ChatClient.Builder ollamaChatClientBuilder(ChatClientBuilderConfigurer chatClientBuilderConfigurer,
-                                                      OllamaChatModel ollamaChatModel) {
-        ChatClient.Builder builder = ChatClient.builder(ollamaChatModel);
-        return chatClientBuilderConfigurer.configure(builder);
-
-    }
-
-    @Bean
-    public TokenTextSplitter tokenTextSplitter() {
-        return new TokenTextSplitter();
     }
 
     @Bean
@@ -80,11 +40,6 @@ public class ChatConfig {
         return chatClientBuilderConfigurer.configure(builder);
     }
 
-    @Bean
-    public RestClient.Builder restClientBuilder() {
-        // Customize the RestClient.Builder here if needed
-        return RestClient.builder();
-    }
 
     @Bean
     @ConditionalOnMissingBean

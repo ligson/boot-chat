@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.config;
+package com.yonyougov.bootchat.config.gpt;
 
 import io.micrometer.observation.ObservationRegistry;
 import io.milvus.client.MilvusServiceClient;
