@@ -5,27 +5,25 @@ import com.yonyougov.bootchat.chatmsg.ChatMsgService;
 import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
 import com.yonyougov.bootchat.util.SaveWikeUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.reader.ExtractedTextFormatter;
-import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
-import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-
 import org.apache.tika.utils.StringUtils;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.qianfan.QianFanChatModel;
+import org.springframework.ai.reader.ExtractedTextFormatter;
+import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
+import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
+import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
@@ -43,11 +41,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class QianfanServiceImpl implements QianfanService {
-    private final ChatClient ollamaChatClient;
+    private final ChatClient chatClient;
     private final OpenAiChatModel openAiChatModel;
     private final ZhiPuAiChatModel zhiPuAiChatModel;
     private final TokenTextSplitter tokenTextSplitter;
-    private final QianFanChatModel chatClient;
+    private final QianFanChatModel qianFanChatModel;
     private final VectorStore vectorStore;
     private final ChatMsgService chatMsgService;
     @Value("${yondif.file.path}")
@@ -57,11 +55,11 @@ public class QianfanServiceImpl implements QianfanService {
     @Value("${yondif.chat.model:qianfan}")
     private String chatModel;
 
-    public QianfanServiceImpl(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, OpenAiChatModel openAiChatModel, ZhiPuAiChatModel zhiPuAiChatModel, TokenTextSplitter tokenTextSplitter, QianFanChatModel chatClient, VectorStore vectorStore, ChatMsgService chatMsgService) {
-        this.ollamaChatClient = builder.build();
+    public QianfanServiceImpl(ChatClient chatClient, OpenAiChatModel openAiChatModel, ZhiPuAiChatModel zhiPuAiChatModel, TokenTextSplitter tokenTextSplitter, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
+        this.chatClient = chatClient;
         this.zhiPuAiChatModel = zhiPuAiChatModel;
         this.tokenTextSplitter = tokenTextSplitter;
-        this.chatClient = chatClient;
+        this.qianFanChatModel = qianFanChatModel;
         this.vectorStore = vectorStore;
         this.chatMsgService = chatMsgService;
         this.openAiChatModel = openAiChatModel;
@@ -96,12 +94,12 @@ public class QianfanServiceImpl implements QianfanService {
         }
 
         prompt.getInstructions().add(new UserMessage(p.toString()));
-        Flux<ChatResponse> result = chatClient.stream(prompt);
+        Flux<ChatResponse> result = qianFanChatModel.stream(prompt);
 
         if (chatModel.equals("qianfan")) {
-            result = chatClient.stream(prompt);
+            result = qianFanChatModel.stream(prompt);
         } else if (chatModel.equals("ollama")) {
-            ollamaChatClient.prompt().stream();
+            chatClient.prompt().stream();
         } else if (chatModel.equals("openai")) {
             result = openAiChatModel.stream(prompt);
         } else if (chatModel.equals("zhipu")) {

@@ -10,7 +10,6 @@ import org.springframework.ai.reader.ExtractedTextFormatter;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -34,8 +33,8 @@ public class AIController {
     private Resource promptResource;
 //    private final TokenTextSplitter tokenTextSplitter;
 
-    public AIController(@Qualifier("ollamaChatClientBuilder") ChatClient.Builder builder, VectorStore vectorStore, QianfanService qianfanService) {
-        this.chatClient = builder.build();
+    public AIController(ChatClient chatClient, VectorStore vectorStore, QianfanService qianfanService) {
+        this.chatClient = chatClient;
         this.vectorStore = vectorStore;
         this.qianfanService = qianfanService;
 //        this.tokenTextSplitter = tokenTextSplitter;

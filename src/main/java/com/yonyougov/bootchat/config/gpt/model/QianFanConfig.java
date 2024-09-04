@@ -1,18 +1,13 @@
-package com.yonyougov.bootchat.config.gpt;
+package com.yonyougov.bootchat.config.gpt.model;
 
 import com.yonyougov.bootchat.config.ProxyConfig;
-import org.springframework.ai.autoconfigure.chat.client.ChatClientBuilderConfigurer;
 import org.springframework.ai.autoconfigure.qianfan.QianFanChatProperties;
 import org.springframework.ai.autoconfigure.qianfan.QianFanConnectionProperties;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.qianfan.api.QianFanApi;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
@@ -31,18 +26,8 @@ public class QianFanConfig {
         this.proxyConfig = proxyConfig;
     }
 
-    @Bean
-    @Scope("prototype")
-    @ConditionalOnClass(QianFanChatModel.class)
-    public ChatClient.Builder qianFanChatClientBuilder(ChatClientBuilderConfigurer chatClientBuilderConfigurer,
-                                                       QianFanChatModel qianFanChatModel) {
-        ChatClient.Builder builder = ChatClient.builder(qianFanChatModel);
-        return chatClientBuilderConfigurer.configure(builder);
-    }
-
 
     @Bean
-    @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = QianFanChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true",
             matchIfMissing = true)
     public QianFanChatModel qianFanChatModel(QianFanConnectionProperties commonProperties,

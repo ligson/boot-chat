@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.config.gpt;
+package com.yonyougov.bootchat.config.gpt.model;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.config.gpt;
+package com.yonyougov.bootchat.config.gpt.model;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
