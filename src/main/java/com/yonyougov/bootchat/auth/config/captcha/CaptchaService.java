@@ -1,7 +1,7 @@
 package com.yonyougov.bootchat.auth.config.captcha;
 
 
-import com.yonyougov.bootchat.vo.WebResult;
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import jakarta.validation.constraints.NotNull;
 
 public interface CaptchaService {

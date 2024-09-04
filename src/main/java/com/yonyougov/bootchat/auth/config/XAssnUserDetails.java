@@ -1,6 +1,6 @@
 package com.yonyougov.bootchat.auth.config;
 
-import com.yonyougov.bootchat.base.user.User;
+import com.yonyougov.bootchat.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

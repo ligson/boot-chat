@@ -1,8 +1,8 @@
 package com.yonyougov.bootchat.auth.controller;
 
 import com.yonyougov.bootchat.auth.vo.RegisterByPwdReq;
-import com.yonyougov.bootchat.base.user.UserService;
-import com.yonyougov.bootchat.vo.WebResult;
+import com.yonyougov.bootchat.user.UserService;
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
