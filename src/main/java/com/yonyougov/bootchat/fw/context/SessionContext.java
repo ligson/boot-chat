@@ -1,6 +1,6 @@
 package com.yonyougov.bootchat.fw.context;
 
-import com.yonyougov.bootchat.base.user.User;
+import com.yonyougov.bootchat.user.User;
 import com.yonyougov.bootchat.fw.cache.local.LocalRequestCache;
 import com.yonyougov.bootchat.fw.request.RequestStore;
 import org.springframework.stereotype.Component;

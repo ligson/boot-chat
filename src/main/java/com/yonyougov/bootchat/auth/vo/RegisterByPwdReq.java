@@ -1,6 +1,6 @@
 package com.yonyougov.bootchat.auth.vo;
 
-import com.yonyougov.bootchat.vo.BaseReq;
+import com.yonyougov.bootchat.fw.web.vo.BaseReq;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;

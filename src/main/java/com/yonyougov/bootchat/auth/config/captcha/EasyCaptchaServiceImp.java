@@ -1,6 +1,6 @@
 package com.yonyougov.bootchat.auth.config.captcha;
 
-import com.yonyougov.bootchat.vo.WebResult;
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import io.springboot.captcha.GifCaptcha;
 import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;

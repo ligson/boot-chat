@@ -2,7 +2,7 @@ package com.yonyougov.bootchat.auth.filter;
 
 import com.yonyougov.bootchat.auth.config.TokenGenerator;
 import com.yonyougov.bootchat.auth.config.XAssnUserDetails;
-import com.yonyougov.bootchat.base.user.User;
+import com.yonyougov.bootchat.user.User;
 import com.yonyougov.bootchat.fw.context.SessionContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,7 +1,7 @@
 package com.yonyougov.bootchat.auth.controller;
 
 import com.yonyougov.bootchat.auth.config.captcha.CaptchaService;
-import com.yonyougov.bootchat.vo.WebResult;
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;

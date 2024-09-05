@@ -1,8 +1,8 @@
 package com.yonyougov.bootchat.auth.config;
 
-import com.yonyougov.bootchat.base.user.User;
-import com.yonyougov.bootchat.base.user.UserService;
-import com.yonyougov.bootchat.serializer.CruxSerializer;
+import com.yonyougov.bootchat.user.User;
+import com.yonyougov.bootchat.user.UserService;
+import com.yonyougov.bootchat.fw.serializer.CruxSerializer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

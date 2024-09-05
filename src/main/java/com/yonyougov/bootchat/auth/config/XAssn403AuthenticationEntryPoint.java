@@ -1,8 +1,8 @@
 package com.yonyougov.bootchat.auth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yonyougov.bootchat.vo.ErrorType;
-import com.yonyougov.bootchat.vo.WebResult;
+import com.yonyougov.bootchat.fw.web.vo.ErrorType;
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
 package com.yonyougov.bootchat.auth.config;
 
 
-import com.yonyougov.bootchat.base.user.User;
+import com.yonyougov.bootchat.user.User;
 
 public interface TokenGenerator {
     String generator(User user);
