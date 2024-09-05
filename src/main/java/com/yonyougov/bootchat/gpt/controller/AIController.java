@@ -1,7 +1,7 @@
 package com.yonyougov.bootchat.gpt.controller;
 
 
-import com.yonyougov.bootchat.gpt.qianfan.service.QianfanService;
+import com.yonyougov.bootchat.gpt.service.GptChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
@@ -28,15 +28,15 @@ import java.util.Map;
 public class AIController {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final QianfanService qianfanService;
+    private final GptChatService gptChatService;
     @Value("classpath:chat_templates/rag2.tpl")
     private Resource promptResource;
 //    private final TokenTextSplitter tokenTextSplitter;
 
-    public AIController(ChatClient chatClient, VectorStore vectorStore, QianfanService qianfanService) {
+    public AIController(ChatClient chatClient, VectorStore vectorStore, GptChatService gptChatService) {
         this.chatClient = chatClient;
         this.vectorStore = vectorStore;
-        this.qianfanService = qianfanService;
+        this.gptChatService = gptChatService;
 //        this.tokenTextSplitter = tokenTextSplitter;
     }
 

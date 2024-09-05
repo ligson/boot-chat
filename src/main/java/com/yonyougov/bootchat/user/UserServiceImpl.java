@@ -5,7 +5,6 @@ import com.yonyougov.bootchat.auth.config.XAssnUserDetails;
 import com.yonyougov.bootchat.auth.config.captcha.CaptchaService;
 import com.yonyougov.bootchat.auth.vo.AuthByPwdReq;
 import com.yonyougov.bootchat.auth.vo.RegisterByPwdReq;
-import com.yonyougov.bootchat.base.user.QUser;
 import com.yonyougov.bootchat.fw.ex.BussinessException;
 import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import lombok.SneakyThrows;

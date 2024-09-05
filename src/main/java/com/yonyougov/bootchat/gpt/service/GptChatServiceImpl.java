@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.gpt.qianfan.service;
+package com.yonyougov.bootchat.gpt.service;
 
 import com.yonyougov.bootchat.chatmsg.ChatMsg;
 import com.yonyougov.bootchat.chatmsg.ChatMsgService;
@@ -15,14 +15,12 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.qianfan.QianFanChatModel;
 import org.springframework.ai.reader.ExtractedTextFormatter;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -33,17 +31,14 @@ import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class QianfanServiceImpl implements QianfanService {
+public class GptChatServiceImpl implements GptChatService {
     private final ChatClient chatClient;
-    private final OpenAiChatModel openAiChatModel;
-    private final ZhiPuAiChatModel zhiPuAiChatModel;
     private final TokenTextSplitter tokenTextSplitter;
     private final QianFanChatModel qianFanChatModel;
     private final VectorStore vectorStore;
@@ -55,75 +50,54 @@ public class QianfanServiceImpl implements QianfanService {
     @Value("${yondif.chat.model:qianfan}")
     private String chatModel;
 
-    public QianfanServiceImpl(ChatClient chatClient, OpenAiChatModel openAiChatModel, ZhiPuAiChatModel zhiPuAiChatModel, TokenTextSplitter tokenTextSplitter, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
+    public GptChatServiceImpl(ChatClient chatClient, TokenTextSplitter tokenTextSplitter, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
         this.chatClient = chatClient;
-        this.zhiPuAiChatModel = zhiPuAiChatModel;
         this.tokenTextSplitter = tokenTextSplitter;
         this.qianFanChatModel = qianFanChatModel;
         this.vectorStore = vectorStore;
         this.chatMsgService = chatMsgService;
-        this.openAiChatModel = openAiChatModel;
     }
 
-    @Override
-    public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
+
+    private Prompt buildPrompt(String userId, ChatMessage2 chatMessage) {
         List<Document> docs = vectorStore.similaritySearch(chatMessage.getProblem());
 
         List<String> context = docs.stream().map(Document::getContent).toList();
 
         List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
-        Prompt prompt = new Prompt(
-                byUserId.stream().map(m -> {
-                    if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
-                        return new AssistantMessage(m.getMsg());
-                    } else {
-                        return new UserMessage(m.getMsg());
-                    }
-                }).collect(Collectors.toList()));
+        Prompt prompt = new Prompt(byUserId.stream().map(m -> {
+            if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
+                return new AssistantMessage(m.getMsg());
+            } else {
+                return new UserMessage(m.getMsg());
+            }
+        }).collect(Collectors.toList()));
         SystemPromptTemplate promptTemplate = new SystemPromptTemplate(promptResource);
         // 填充数据
         Prompt p = promptTemplate.create(Map.of("context", context, "question", chatMessage.getProblem()));
+        prompt.getInstructions().add(new UserMessage(p.toString()));
+        return prompt;
+    }
+
+    @Override
+    public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
+        Prompt prompt = buildPrompt(userId, chatMessage);
         if (!StringUtils.isEmpty(chatMessage.getProblem())) {
-            ChatMsg chatMsg = new ChatMsg();
-            chatMsg.setMsg(chatMessage.getProblem());
-            chatMsg.setRole("user");
-            chatMsg.setUserId(userId);
-            //使上次回答的消息时间早于当前时间，以便于排序
-            chatMsg.setCreateTime(new Date(System.currentTimeMillis()));
-            chatMsgService.save(chatMsg);
+            chatMsgService.saveMsg(userId, false, chatMessage.getProblem());
         }
 
-        prompt.getInstructions().add(new UserMessage(p.toString()));
+
         Flux<ChatResponse> result = qianFanChatModel.stream(prompt);
 
-        if (chatModel.equals("qianfan")) {
-            result = qianFanChatModel.stream(prompt);
-        } else if (chatModel.equals("ollama")) {
-            chatClient.prompt().stream();
-        } else if (chatModel.equals("openai")) {
-            result = openAiChatModel.stream(prompt);
-        } else if (chatModel.equals("zhipu")) {
-            result = zhiPuAiChatModel.stream(prompt);
-        }
 
-        return result.collectList()
-                .flatMapMany(list -> {
-                    // 处理list中的数据，例如将它们连接成一个字符串
-                    String fullAnswer = list.stream()
-                            .map(ChatResponse::getResult)
-                            .map(Generation::getOutput)
-                            .map(AssistantMessage::getContent)
-                            .reduce((a, b) -> a + b)
-                            .orElse("");
+        return result.collectList().flatMapMany(list -> {
+            // 处理list中的数据，例如将它们连接成一个字符串
+            String fullAnswer = list.stream().map(ChatResponse::getResult).map(Generation::getOutput).map(AssistantMessage::getContent).reduce((a, b) -> a + b).orElse("");
 
-                    ChatMsg chatMsg = new ChatMsg();
-                    chatMsg.setMsg(fullAnswer);
-                    chatMsg.setRole("assistant");
-                    chatMsg.setUserId(userId);
-                    chatMsg.setCreateTime(new Date());
-                    chatMsgService.save(chatMsg);
-                    return Flux.fromIterable(list);
-                });
+            chatMsgService.saveMsg(userId, true, fullAnswer);
+
+            return Flux.fromIterable(list);
+        });
 
     }
 
@@ -149,6 +123,15 @@ public class QianfanServiceImpl implements QianfanService {
         saveWikeUtil.saveWiki(cookie, filePath);
     }
 
+    @Override
+    public ChatResponse generate(String userId, String message) {
+        Prompt prompt = buildPrompt(userId, new ChatMessage2(message, ""));
+        chatMsgService.saveMsg(userId, false, message);
+        ChatResponse response = chatClient.prompt(prompt).call().chatResponse();
+        chatMsgService.saveMsg(userId, true, response.getResult().getOutput().getContent());
+        return response;
+    }
+
 
     @Override
     @Async
@@ -165,16 +148,7 @@ public class QianfanServiceImpl implements QianfanService {
 //                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
 //                documents.addAll(tikaDocumentReader.get());
                 Resource resource = new FileSystemResource(file);
-                PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder()
-                        .withPageExtractedTextFormatter(
-                                new ExtractedTextFormatter
-                                        .Builder()
-                                        .withNumberOfBottomTextLinesToDelete(3)
-                                        .withNumberOfTopPagesToSkipBeforeDelete(1)
-                                        .build()
-                        )
-                        .withPagesPerDocument(1)
-                        .build();
+                PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder().withPageExtractedTextFormatter(new ExtractedTextFormatter.Builder().withNumberOfBottomTextLinesToDelete(3).withNumberOfTopPagesToSkipBeforeDelete(1).build()).withPagesPerDocument(1).build();
                 PagePdfDocumentReader pagePdfDocumentReader = new PagePdfDocumentReader(resource, config);
 //                documents.addAll(pagePdfDocumentReader.get());
                 try {

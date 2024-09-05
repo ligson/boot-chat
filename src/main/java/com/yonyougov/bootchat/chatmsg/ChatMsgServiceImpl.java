@@ -1,7 +1,6 @@
 package com.yonyougov.bootchat.chatmsg;
 
 import com.querydsl.core.BooleanBuilder;
-import com.yonyougov.bootchat.base.chatmsg.QChatMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,13 +18,11 @@ public class ChatMsgServiceImpl implements ChatMsgService {
     }
 
     @Override
-    public void saveMsg(String userId, String msg) {
+    public void saveMsg(String userId, boolean assistant, String msg) {
         ChatMsg chatMsg = new ChatMsg();
         chatMsg.setUserId(userId);
         chatMsg.setMsg(msg);
-        chatMsg.setCreateTime(new java.util.Date());
-        chatMsg.setUpdateTime(new java.util.Date());
-        chatMsg.setRole("assistant");
+        chatMsg.setRole(assistant ? "assistant" : "user");
         save(chatMsg);
     }
 

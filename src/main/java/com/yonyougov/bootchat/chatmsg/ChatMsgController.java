@@ -32,6 +32,6 @@ public class ChatMsgController {
     @PostMapping("/savemsg")
     public void save(@RequestBody ChatMessage2 messages) {
         String userId = sessionContext.getCurrentUser().getId();
-        chatMsgService.saveMsg(userId, messages.getLastAnswer());
+        chatMsgService.saveMsg(userId, true, messages.getLastAnswer());
     }
 }
