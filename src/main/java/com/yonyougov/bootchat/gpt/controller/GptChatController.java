@@ -4,27 +4,19 @@ import com.yonyougov.bootchat.fw.context.SessionContext;
 import com.yonyougov.bootchat.minio.file.FileMsg;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
 import com.yonyougov.bootchat.minio.util.MinioUtil;
-import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
-import com.yonyougov.bootchat.qianfan.service.QianfanService;
-
-import com.yonyougov.bootchat.vo.WebResult;
 import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
 import com.yonyougov.bootchat.gpt.service.GptChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.image.ImagePrompt;
-import org.springframework.ai.image.ImageResponse;
-import org.springframework.ai.qianfan.QianFanChatModel;
-import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiImageModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+
 
 
 @RequestMapping("/api/gptchat")

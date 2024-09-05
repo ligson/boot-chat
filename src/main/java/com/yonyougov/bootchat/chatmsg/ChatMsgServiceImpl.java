@@ -1,6 +1,7 @@
 package com.yonyougov.bootchat.chatmsg;
 
 import com.querydsl.core.BooleanBuilder;
+
 import com.yonyougov.bootchat.minio.file.FileMsg;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,4 +59,6 @@ public class ChatMsgServiceImpl implements ChatMsgService {
         builder.and(QChatMsg.chatMsg.userId.eq(userId));
         return (List<ChatMsg>) chatMsgDao.findAll(builder, Sort.by(Sort.Direction.ASC, "createTime"));
     }
+
+
 }

@@ -1,7 +1,7 @@
 package com.yonyougov.bootchat.minio.file;
 
-import com.yonyougov.bootchat.base.domain.BaseEntity;
-import com.yonyougov.bootchat.base.domain.CqtIdGenerator;
+
+import com.yonyougov.bootchat.fw.base.domain.CqtIdGenerator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

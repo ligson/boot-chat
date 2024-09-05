@@ -1,11 +1,13 @@
 package com.yonyougov.bootchat.minio.file;
 
-import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
-import com.yonyougov.bootchat.base.chatmsg.ChatMsgService;
-import com.yonyougov.bootchat.base.user.User;
-import com.yonyougov.bootchat.base.user.UserService;
+
+
+import com.yonyougov.bootchat.chatmsg.ChatMsg;
+import com.yonyougov.bootchat.chatmsg.ChatMsgService;
 import com.yonyougov.bootchat.fw.context.SessionContext;
-import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.user.User;
+import com.yonyougov.bootchat.user.UserService;
 import org.apache.tika.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

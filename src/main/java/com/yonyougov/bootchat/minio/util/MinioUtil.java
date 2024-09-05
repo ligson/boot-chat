@@ -1,9 +1,9 @@
 package com.yonyougov.bootchat.minio.util;
 
-import com.yonyougov.bootchat.base.chatmsg.ChatMsg;
+import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
 import com.yonyougov.bootchat.minio.config.MinioConfig;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
-import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
+
 import io.micrometer.common.util.StringUtils;
 import io.minio.*;
 import io.minio.http.Method;

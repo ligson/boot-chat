@@ -1,10 +1,10 @@
 package com.yonyougov.bootchat.minio;
 
 
+import com.yonyougov.bootchat.fw.web.vo.WebResult;
+import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
 import com.yonyougov.bootchat.minio.config.MinioConfig;
 import com.yonyougov.bootchat.minio.util.MinioUtil;
-import com.yonyougov.bootchat.qianfan.dto.ChatMessage2;
-import com.yonyougov.bootchat.vo.WebResult;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import io.swagger.annotations.ApiOperation;
