@@ -13,4 +13,5 @@ public interface ChatMsgService {
     void saveMsg(String userId, String msg);
 
     void saveMsg(String userId, String msg, FileMsg fileMsg);
+    void delete(String id);
 }

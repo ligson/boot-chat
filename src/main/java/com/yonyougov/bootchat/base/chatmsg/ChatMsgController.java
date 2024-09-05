@@ -34,4 +34,9 @@ public class ChatMsgController {
         String userId = sessionContext.getCurrentUser().getId();
         chatMsgService.saveMsg(userId, messages.getLastAnswer());
     }
+    @PostMapping("/clear")
+    public void save() {
+        String userId = sessionContext.getCurrentUser().getId();
+        chatMsgService.delete(userId);
+    }
 }

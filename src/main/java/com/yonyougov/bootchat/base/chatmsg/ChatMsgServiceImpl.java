@@ -2,6 +2,7 @@ package com.yonyougov.bootchat.base.chatmsg;
 
 import com.querydsl.core.BooleanBuilder;
 import com.yonyougov.bootchat.minio.file.FileMsg;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,16 @@ public class ChatMsgServiceImpl implements ChatMsgService {
         chatMsg.setUri(fileMsg.getLocalDirectory());
         chatMsg.setSize(fileMsg.getFileSize());
         save(chatMsg);
+    }
+
+    /**
+     * 根据用户id删除聊天记录
+     * @param userId
+     */
+    @Transactional
+    @Override
+    public void delete(String userId) {
+        chatMsgDao.deleteByUserId(userId);
     }
 
     @Override

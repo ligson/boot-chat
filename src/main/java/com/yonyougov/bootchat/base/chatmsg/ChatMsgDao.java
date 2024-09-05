@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChatMsgDao extends CrudDao<ChatMsg, String> {
+    void deleteByUserId(String userId);
 }
