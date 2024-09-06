@@ -2,7 +2,7 @@ package com.yonyougov.bootchat.chatmsg;
 
 
 import com.yonyougov.bootchat.fw.context.SessionContext;
-import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

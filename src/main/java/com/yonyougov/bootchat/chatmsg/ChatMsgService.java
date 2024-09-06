@@ -17,7 +17,8 @@ public interface ChatMsgService {
      * @param msg       聊天消息
      */
     void saveMsg(String userId, boolean assistant, String msg);
-    void saveMsg(String userId, String msg, FileMsg fileMsg);
-    void delete(String id);
 
+    void saveMsg(String userId, String msg, FileMsg fileMsg);
+
+    void delete(String userId);
 }

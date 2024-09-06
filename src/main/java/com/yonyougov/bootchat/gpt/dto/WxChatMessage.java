@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.gpt.qianfan.dto;
+package com.yonyougov.bootchat.gpt.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatMessage2 {
+public class WxChatMessage {
     String problem;
-    String lastAnswer;
+    String group;
+    Boolean isReadHistory;
+    Boolean isReadVector;
 }

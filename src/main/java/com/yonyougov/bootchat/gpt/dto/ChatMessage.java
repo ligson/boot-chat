@@ -1,4 +1,4 @@
-package com.yonyougov.bootchat.gpt.qianfan.dto;
+package com.yonyougov.bootchat.gpt.dto;
 
 import lombok.Data;
 

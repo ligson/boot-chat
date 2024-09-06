@@ -1,8 +1,7 @@
 package com.yonyougov.bootchat.minio.file;
 
 
-
-import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 
 import java.io.File;
 import java.util.Optional;

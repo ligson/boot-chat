@@ -28,6 +28,8 @@ public class SecurityFilterChainConfig {
             "/api/captcha/**",
             "/api/user/me",
             "/api/login/**",
+            "/api/gptchat/ai/generateStream/**",
+            "/api/gptchat/ai/generateStreamwx",
             "/api/ai/test**",
             "/qianfan/ai/test/**",
             "/api/register/**"

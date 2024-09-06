@@ -1,9 +1,8 @@
 package com.yonyougov.bootchat.minio.util;
 
-import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 import com.yonyougov.bootchat.minio.config.MinioConfig;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
-
 import io.micrometer.common.util.StringUtils;
 import io.minio.*;
 import io.minio.http.Method;
@@ -13,7 +12,6 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FastByteArrayOutputStream;

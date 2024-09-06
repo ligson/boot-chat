@@ -1,11 +1,15 @@
 package com.yonyougov.bootchat.gpt.controller;
 
 import com.yonyougov.bootchat.fw.context.SessionContext;
+import com.yonyougov.bootchat.gpt.dto.WxChatMessage;
 import com.yonyougov.bootchat.minio.file.FileMsg;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
 import com.yonyougov.bootchat.minio.util.MinioUtil;
+
+
+
 import com.yonyougov.bootchat.fw.web.vo.WebResult;
-import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 import com.yonyougov.bootchat.gpt.service.GptChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -92,5 +96,9 @@ public class GptChatController {
     public Flux<ChatResponse> generateStream(@RequestBody ChatMessage2 messages) {
         String userId = sessionContext.getCurrentUser().getId();
         return gptChatService.stream(userId, messages);
+    }
+    @PostMapping("/ai/generateStreamwx")
+    public String generateStreamwx(@RequestBody WxChatMessage messages) {
+        return gptChatService.call(messages);
     }
 }

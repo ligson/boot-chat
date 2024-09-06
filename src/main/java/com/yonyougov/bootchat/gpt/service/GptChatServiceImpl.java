@@ -2,7 +2,9 @@ package com.yonyougov.bootchat.gpt.service;
 
 import com.yonyougov.bootchat.chatmsg.ChatMsg;
 import com.yonyougov.bootchat.chatmsg.ChatMsgService;
-import com.yonyougov.bootchat.gpt.qianfan.dto.ChatMessage2;
+import com.yonyougov.bootchat.config.gpt.model.MultiChatModel;
+import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
+import com.yonyougov.bootchat.gpt.dto.WxChatMessage;
 import com.yonyougov.bootchat.util.SaveWikeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.utils.StringUtils;
@@ -40,6 +42,7 @@ import java.util.stream.Collectors;
 public class GptChatServiceImpl implements GptChatService {
     private final ChatClient chatClient;
     private final TokenTextSplitter tokenTextSplitter;
+    private final MultiChatModel multiChatModel;
     private final QianFanChatModel qianFanChatModel;
     private final VectorStore vectorStore;
     private final ChatMsgService chatMsgService;
@@ -50,45 +53,55 @@ public class GptChatServiceImpl implements GptChatService {
     @Value("${yondif.chat.model:qianfan}")
     private String chatModel;
 
-    public GptChatServiceImpl(ChatClient chatClient, TokenTextSplitter tokenTextSplitter, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
+    public GptChatServiceImpl(ChatClient chatClient, TokenTextSplitter tokenTextSplitter, MultiChatModel multiChatModel, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
         this.chatClient = chatClient;
         this.tokenTextSplitter = tokenTextSplitter;
+        this.multiChatModel = multiChatModel;
         this.qianFanChatModel = qianFanChatModel;
         this.vectorStore = vectorStore;
         this.chatMsgService = chatMsgService;
     }
 
 
-    private Prompt buildPrompt(String userId, ChatMessage2 chatMessage) {
-        List<Document> docs = vectorStore.similaritySearch(chatMessage.getProblem());
+    private Prompt buildPrompt(String userId, ChatMessage2 chatMessage, Boolean isReadVector, Boolean isReadHistory) {
+        List<String> context = new ArrayList<>();
+        if ((isReadVector == null || isReadVector)) {
+            List<Document> docs = vectorStore.similaritySearch(chatMessage.getProblem());
+            context = docs.stream().map(Document::getContent).toList();
+        }
 
-        List<String> context = docs.stream().map(Document::getContent).toList();
-
-        List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
-        Prompt prompt = new Prompt(byUserId.stream().map(m -> {
-            if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
-                return new AssistantMessage(m.getMsg());
+        if (isReadHistory == null || isReadHistory) {
+            List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
+            Prompt prompt = new Prompt(byUserId.stream().map(m -> {
+                if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
+                    return new AssistantMessage(m.getMsg());
+                } else {
+                    return new UserMessage(m.getMsg());
+                }
+            }).collect(Collectors.toList()));
+            if (context.isEmpty()) {
+                prompt.getInstructions().add(new UserMessage(chatMessage.getProblem()));
+                return prompt;
             } else {
-                return new UserMessage(m.getMsg());
+                SystemPromptTemplate promptTemplate = new SystemPromptTemplate(promptResource);
+                // 填充数据
+                Prompt p = promptTemplate.create(Map.of("context", context, "question", chatMessage.getProblem()));
+                prompt.getInstructions().add(new UserMessage(p.toString()));
+                return prompt;
             }
-        }).collect(Collectors.toList()));
-        SystemPromptTemplate promptTemplate = new SystemPromptTemplate(promptResource);
-        // 填充数据
-        Prompt p = promptTemplate.create(Map.of("context", context, "question", chatMessage.getProblem()));
-        prompt.getInstructions().add(new UserMessage(p.toString()));
-        return prompt;
+        }
+        return new Prompt(context.stream().map(UserMessage::new).collect(Collectors.toList()));
     }
 
     @Override
     public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
-        Prompt prompt = buildPrompt(userId, chatMessage);
+        Prompt prompt = buildPrompt(userId, chatMessage, true, true);
         if (!StringUtils.isEmpty(chatMessage.getProblem())) {
             chatMsgService.saveMsg(userId, false, chatMessage.getProblem());
         }
 
 
-        Flux<ChatResponse> result = qianFanChatModel.stream(prompt);
-
+        Flux<ChatResponse> result = multiChatModel.stream(prompt);
 
         return result.collectList().flatMapMany(list -> {
             // 处理list中的数据，例如将它们连接成一个字符串
@@ -125,11 +138,26 @@ public class GptChatServiceImpl implements GptChatService {
 
     @Override
     public ChatResponse generate(String userId, String message) {
-        Prompt prompt = buildPrompt(userId, new ChatMessage2(message, ""));
-        chatMsgService.saveMsg(userId, false, message);
+        Prompt prompt = buildPrompt(userId, new ChatMessage2(message, ""), false, false);
+//        chatMsgService.saveMsg(userId, false, message);
         ChatResponse response = chatClient.prompt(prompt).call().chatResponse();
-        chatMsgService.saveMsg(userId, true, response.getResult().getOutput().getContent());
+//        chatMsgService.saveMsg(userId, true, response.getResult().getOutput().getContent());
         return response;
+    }
+
+    @Override
+    public String call(WxChatMessage wxChatMessage) {
+        if (!StringUtils.isEmpty(wxChatMessage.getProblem()) && (wxChatMessage.getIsReadHistory() == null || wxChatMessage.getIsReadHistory())) {
+            chatMsgService.saveMsg(wxChatMessage.getGroup(), false, wxChatMessage.getProblem());
+        }
+        ChatMessage2 chatMessage2 = new ChatMessage2(wxChatMessage.getProblem(), "");
+        Prompt prompt = buildPrompt(wxChatMessage.getGroup(), chatMessage2, wxChatMessage.getIsReadVector(), wxChatMessage.getIsReadHistory());
+        String result = multiChatModel.call(prompt).getResult().getOutput().getContent();
+        if (wxChatMessage.getIsReadHistory() == null || wxChatMessage.getIsReadHistory()) {
+            chatMsgService.saveMsg(wxChatMessage.getGroup(), true, result);
+        }
+        return result;
+//        return "";
     }
 
 
