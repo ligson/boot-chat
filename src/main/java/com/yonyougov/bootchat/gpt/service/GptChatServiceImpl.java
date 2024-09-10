@@ -90,7 +90,7 @@ public class GptChatServiceImpl implements GptChatService {
                 return prompt;
             }
         }
-        return new Prompt(context.stream().map(UserMessage::new).collect(Collectors.toList()));
+        return new Prompt(new UserMessage(chatMessage.getProblem()));
     }
 
     @Override
