@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
 public class EmbeddingModelConfig {
 
     @Bean
+    @Primary
     public EmbeddingModel multiEmbeddingModel(List<EmbeddingModel> embeddingModels) {
         return new MultilEmbeddingModel(embeddingModels, "ollama");
     }

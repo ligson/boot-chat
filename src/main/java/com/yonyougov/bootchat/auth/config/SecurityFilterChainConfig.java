@@ -30,8 +30,7 @@ public class SecurityFilterChainConfig {
             "/api/login/**",
             "/api/gptchat/ai/generateStream/**",
             "/api/gptchat/ai/generateStreamwx",
-            "/api/ai/test**",
-            "/qianfan/ai/test/**",
+            "/api/gptchat/ai/test**",
             "/api/register/**"
     };
 

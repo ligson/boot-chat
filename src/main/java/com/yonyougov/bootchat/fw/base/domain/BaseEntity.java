@@ -28,25 +28,25 @@ public class BaseEntity {
 
     //"创建人"
     @CreatedBy
-    @Column
+    @Column(name = "create_by")
     @Comment("创建人")
     private String createBy;
 
     //"创建时间"
     @CreatedDate
-    @Column
+    @Column(name = "create_time")
     @Comment("创建时间")
     private Date createTime;
 
     //"修改人"
     @LastModifiedBy
-    @Column
+    @Column(name = "last_modified_by")
     @Comment("修改人")
     private String lastModifiedBy;
 
     //"更新时间"
     @LastModifiedDate
-    @Column
+    @Column(name = "update_time")
     @Comment("更新时间")
     private Date updateTime;
 }

@@ -22,6 +22,7 @@ import org.springframework.ai.reader.ExtractedTextFormatter;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -65,13 +66,12 @@ public class GptChatServiceImpl implements GptChatService {
 
     private Prompt buildPrompt(String userId, ChatMessage2 chatMessage, Boolean isReadVector, Boolean isReadHistory) {
         List<String> context = new ArrayList<>();
+        List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
         if ((isReadVector == null || isReadVector)) {
-            List<Document> docs = vectorStore.similaritySearch(chatMessage.getProblem());
-            context = docs.stream().map(Document::getContent).toList();
+            List<Document> docs = vectorStore.similaritySearch(SearchRequest.defaults().withQuery(chatMessage.getProblem()));
+            context.addAll(docs.stream().map(Document::getContent).toList());
         }
-
-        if (isReadHistory == null || isReadHistory) {
-            List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
+        if ((isReadHistory == null || isReadHistory) || true) {
             Prompt prompt = new Prompt(byUserId.stream().map(m -> {
                 if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
                     return new AssistantMessage(m.getMsg());
@@ -81,17 +81,18 @@ public class GptChatServiceImpl implements GptChatService {
             }).collect(Collectors.toList()));
             if (context.isEmpty()) {
                 prompt.getInstructions().add(new UserMessage(chatMessage.getProblem()));
-                return prompt;
             } else {
                 SystemPromptTemplate promptTemplate = new SystemPromptTemplate(promptResource);
                 // 填充数据
                 Prompt p = promptTemplate.create(Map.of("context", context, "question", chatMessage.getProblem()));
                 prompt.getInstructions().add(new UserMessage(p.toString()));
-                return prompt;
+//                return prompt;
             }
+            return prompt;
         }
         return new Prompt(new UserMessage(chatMessage.getProblem()));
     }
+
 
     @Override
     public Flux<ChatResponse> stream(String userId, ChatMessage2 chatMessage) {
