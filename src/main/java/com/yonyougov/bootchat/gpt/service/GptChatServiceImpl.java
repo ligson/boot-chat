@@ -48,7 +48,7 @@ public class GptChatServiceImpl implements GptChatService {
 
     private Prompt buildPrompt(String userId, ChatMessage2 chatMessage, Boolean isReadVector, Boolean isReadHistory) {
         List<String> context = new ArrayList<>();
-        if ((isReadHistory == null || isReadHistory)) {
+        if ((isReadVector == null || isReadVector)) {
             List<Document> docs = vectorStoreService.searchDocument(chatMessage.getProblem());
             context = docs.stream().map(Document::getContent).toList();
         }
@@ -72,6 +72,12 @@ public class GptChatServiceImpl implements GptChatService {
 //                return prompt;
             }
             return prompt;
+        }
+        if (!context.isEmpty()) {
+            SystemPromptTemplate promptTemplate = new SystemPromptTemplate(promptResource);
+            // 填充数据
+            Prompt p = promptTemplate.create(Map.of("context", context, "question", chatMessage.getProblem()));
+            return new Prompt(new UserMessage(p.toString()));
         }
         return new Prompt(new UserMessage(chatMessage.getProblem()));
     }

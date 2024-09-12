@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 @RequestMapping("/api/gptchat")
@@ -101,7 +102,11 @@ public class GptChatController {
         String userId = sessionContext.getCurrentUser().getId();
         return gptChatService.stream(userId, messages);
     }
-
+    @PostMapping("/ai/addVector")
+    public String addVector(@RequestBody Map<String, String> messages) {
+        vectorStoreService.addVector(messages);
+        return "已存入向量库";
+    }
     @PostMapping("/ai/generateStreamwx")
     public String generateStreamwx(@RequestBody WxChatMessage messages) {
         return gptChatService.call(messages);

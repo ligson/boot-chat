@@ -29,6 +29,7 @@ public class SecurityFilterChainConfig {
             "/api/user/me",
             "/api/login/**",
             "/api/gptchat/ai/generateStream/**",
+            "/api/gptchat/ai/addVector",
             "/api/gptchat/ai/generateStreamwx",
             "/api/gptchat/ai/test**",
             "/api/register/**"

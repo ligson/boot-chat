@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -81,5 +82,8 @@ public class VectorStoreServiceImpl implements VectorStoreService {
                 System.out.println(file.getName() + " 文件已缓存");
             }
         }
+    }
+    public void addVector(Map<String, String> text) {
+        vectorStore.add( List.of(new Document(text.get("massage"))));
     }
 }
