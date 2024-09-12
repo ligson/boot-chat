@@ -5,7 +5,6 @@ import com.yonyougov.bootchat.chatmsg.ChatMsgService;
 import com.yonyougov.bootchat.config.gpt.model.MultiChatModel;
 import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 import com.yonyougov.bootchat.gpt.dto.WxChatMessage;
-import com.yonyougov.bootchat.util.SaveWikeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.utils.StringUtils;
 import org.springframework.ai.chat.client.ChatClient;
@@ -17,22 +16,11 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.qianfan.QianFanChatModel;
-import org.springframework.ai.reader.ExtractedTextFormatter;
-import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
-import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,36 +30,31 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GptChatServiceImpl implements GptChatService {
     private final ChatClient chatClient;
-    private final TokenTextSplitter tokenTextSplitter;
     private final MultiChatModel multiChatModel;
-    private final QianFanChatModel qianFanChatModel;
-    private final VectorStore vectorStore;
     private final ChatMsgService chatMsgService;
     @Value("${yondif.file.path}")
     String filePath;
     @Value("classpath:chat_templates/rag2.tpl")
     private Resource promptResource;
-    @Value("${yondif.chat.model:qianfan}")
-    private String chatModel;
+    private final VectorStoreService vectorStoreService;
 
-    public GptChatServiceImpl(ChatClient chatClient, TokenTextSplitter tokenTextSplitter, MultiChatModel multiChatModel, QianFanChatModel qianFanChatModel, VectorStore vectorStore, ChatMsgService chatMsgService) {
+    public GptChatServiceImpl(ChatClient chatClient, MultiChatModel multiChatModel, ChatMsgService chatMsgService, VectorStoreService vectorStoreService) {
         this.chatClient = chatClient;
-        this.tokenTextSplitter = tokenTextSplitter;
         this.multiChatModel = multiChatModel;
-        this.qianFanChatModel = qianFanChatModel;
-        this.vectorStore = vectorStore;
+        this.vectorStoreService = vectorStoreService;
         this.chatMsgService = chatMsgService;
     }
 
 
     private Prompt buildPrompt(String userId, ChatMessage2 chatMessage, Boolean isReadVector, Boolean isReadHistory) {
         List<String> context = new ArrayList<>();
-        List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
-        if ((isReadVector == null || isReadVector)) {
-            List<Document> docs = vectorStore.similaritySearch(SearchRequest.defaults().withQuery(chatMessage.getProblem()));
-            context.addAll(docs.stream().map(Document::getContent).toList());
+        if ((isReadHistory == null || isReadHistory)) {
+            List<Document> docs = vectorStoreService.searchDocument(chatMessage.getProblem());
+            context = docs.stream().map(Document::getContent).toList();
         }
-        if ((isReadHistory == null || isReadHistory) || true) {
+
+        if (isReadHistory == null || isReadHistory) {
+            List<ChatMsg> byUserId = chatMsgService.findByUserId(userId);
             Prompt prompt = new Prompt(byUserId.stream().map(m -> {
                 if (MessageType.ASSISTANT.getValue().equals(m.getRole())) {
                     return new AssistantMessage(m.getMsg());
@@ -115,27 +98,6 @@ public class GptChatServiceImpl implements GptChatService {
 
     }
 
-    public List<File> getFileList() {
-        File folder = new File(filePath);
-        List<File> fileList = new ArrayList<>();
-        File[] files = folder.listFiles();
-        if (files == null) {
-            return fileList;
-        }
-        for (File file : files) {
-            if (file.isFile() && (file.getName().endsWith(".pdf") || file.getName().endsWith(".txt"))) {
-                fileList.add(file);
-            }
-        }
-        return fileList;
-    }
-
-    @Override
-//    @Async
-    public void saveFile(String cookie) throws Exception {
-        SaveWikeUtil saveWikeUtil = new SaveWikeUtil();
-        saveWikeUtil.saveWiki(cookie, filePath);
-    }
 
     @Override
     public ChatResponse generate(String userId, String message) {
@@ -162,32 +124,4 @@ public class GptChatServiceImpl implements GptChatService {
     }
 
 
-    @Override
-    @Async
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void AddVectorStore() {
-        List<Document> allDoc = vectorStore.similaritySearch("");
-        List<File> fileList = getFileList();
-        if (fileList == null || fileList.isEmpty()) {
-            throw new RuntimeException("文件列表为空");
-        }
-        for (File file : fileList) {
-            if (allDoc.stream().noneMatch(doc -> file.getName().equals(doc.getMetadata().get("source")))) {
-//                Resource resource = new FileSystemResource(file);
-//                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
-//                documents.addAll(tikaDocumentReader.get());
-                Resource resource = new FileSystemResource(file);
-                PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder().withPageExtractedTextFormatter(new ExtractedTextFormatter.Builder().withNumberOfBottomTextLinesToDelete(3).withNumberOfTopPagesToSkipBeforeDelete(1).build()).withPagesPerDocument(1).build();
-                PagePdfDocumentReader pagePdfDocumentReader = new PagePdfDocumentReader(resource, config);
-//                documents.addAll(pagePdfDocumentReader.get());
-                try {
-                    vectorStore.add(tokenTextSplitter.apply(pagePdfDocumentReader.get()));
-                } catch (Exception e) {
-                    log.error("添加向量失败", e);
-                }
-            } else {
-                System.out.println(file.getName() + " 文件已缓存");
-            }
-        }
-    }
 }

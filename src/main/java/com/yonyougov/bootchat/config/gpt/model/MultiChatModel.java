@@ -1,5 +1,6 @@
 package com.yonyougov.bootchat.config.gpt.model;
 
+import com.yonyougov.bootchat.enums.GptModelType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatModel;
@@ -14,9 +15,9 @@ import java.util.List;
 public class MultiChatModel implements ChatModel {
 
     private List<ChatModel> chatModels;
-    private final String type;
+    private final GptModelType type;
 
-    public MultiChatModel(List<ChatModel> chatModels, String type) {
+    public MultiChatModel(List<ChatModel> chatModels, GptModelType type) {
         this.chatModels = chatModels;
         this.type = type;
         log.debug("聊天模型:" + type);
@@ -24,7 +25,7 @@ public class MultiChatModel implements ChatModel {
 
     public ChatModel getChatModel() {
         for (ChatModel chatModel : chatModels) {
-            if (chatModel.getClass().getName().toLowerCase().endsWith((type + "ChatModel").toLowerCase())) {
+            if (type.getChatModelClass().isAssignableFrom(chatModel.getClass())) {
                 return chatModel;
             }
         }

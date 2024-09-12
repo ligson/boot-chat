@@ -2,15 +2,16 @@ package com.yonyougov.bootchat.gpt.controller;
 
 import com.yonyougov.bootchat.fw.context.SessionContext;
 import com.yonyougov.bootchat.gpt.dto.WxChatMessage;
+import com.yonyougov.bootchat.gpt.service.VectorStoreService;
 import com.yonyougov.bootchat.minio.file.FileMsg;
 import com.yonyougov.bootchat.minio.file.FileMsgService;
 import com.yonyougov.bootchat.minio.util.MinioUtil;
 
 
-
 import com.yonyougov.bootchat.fw.web.vo.WebResult;
 import com.yonyougov.bootchat.gpt.dto.ChatMessage2;
 import com.yonyougov.bootchat.gpt.service.GptChatService;
+import com.yonyougov.bootchat.wikicrawl.WikiCrawlService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.image.ImagePrompt;
@@ -22,7 +23,6 @@ import reactor.core.publisher.Flux;
 import java.util.HashMap;
 
 
-
 @RequestMapping("/api/gptchat")
 @RestController
 public class GptChatController {
@@ -31,17 +31,21 @@ public class GptChatController {
     private final GptChatService gptChatService;
     private final ZhiPuAiImageModel zhiPuAiImageModel;
     private final SessionContext sessionContext;
+    private final VectorStoreService vectorStoreService;
+    private final WikiCrawlService wikiCrawlService;
     @Autowired
     private MinioUtil minioUtil;
 
     @Autowired
     private FileMsgService fileMsgService;
 
-    public GptChatController(ChatClient chatClient, GptChatService gptChatService, ZhiPuAiImageModel zhiPuAiImageModel, SessionContext sessionContext) {
+    public GptChatController(ChatClient chatClient, GptChatService gptChatService, ZhiPuAiImageModel zhiPuAiImageModel, SessionContext sessionContext, VectorStoreService vectorStoreService, WikiCrawlService wikiCrawlService) {
         this.chatClient = chatClient;
         this.gptChatService = gptChatService;
         this.zhiPuAiImageModel = zhiPuAiImageModel;
         this.sessionContext = sessionContext;
+        this.vectorStoreService = vectorStoreService;
+        this.wikiCrawlService = wikiCrawlService;
     }
 
     @GetMapping("/ai/generate")
@@ -52,13 +56,13 @@ public class GptChatController {
 
     @PostMapping("/ai/saveAllWiki")
     public WebResult saveAllWiki(@RequestBody String tooken) throws Exception {
-        gptChatService.saveFile(tooken);
+        wikiCrawlService.saveFile(tooken);
         return WebResult.newSuccessInstance();
     }
 
     @GetMapping("/ai/test")
     public void test() {
-        gptChatService.AddVectorStore();
+        vectorStoreService.indexDocuments();
     }
 
     @PostMapping("/ai/image")
@@ -67,7 +71,7 @@ public class GptChatController {
                 new ImagePrompt(messages.getProblem())
         ).getResult().getOutput().getUrl();
         //将图片存入minio，数据库
-        String fileName = minioUtil.uploadImageFromUrl(image,messages);
+        String fileName = minioUtil.uploadImageFromUrl(image, messages);
         //从数据库中查寻图片信息并返回数据
         if (null != fileName) {
             FileMsg fileMsg = fileMsgService.findByFileName(fileName);
@@ -97,6 +101,7 @@ public class GptChatController {
         String userId = sessionContext.getCurrentUser().getId();
         return gptChatService.stream(userId, messages);
     }
+
     @PostMapping("/ai/generateStreamwx")
     public String generateStreamwx(@RequestBody WxChatMessage messages) {
         return gptChatService.call(messages);
